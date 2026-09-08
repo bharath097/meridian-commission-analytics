@@ -1,0 +1,16 @@
+rep_id,rep_name,segment,region,hire_date,quarterly_quota_new_arr,starting_book_arr
+R001,Maria Chen,SMB,West,2023-06-01,160000,302000
+R002,James Okafor,SMB,West,2025-09-01,135000,40000
+R003,Priya Patel,SMB,East,2023-07-01,137000,311000
+R004,David Nguyen,SMB,East,2024-07-01,155000,152000
+R005,Sofia Rossi,SMB,West,2022-11-01,152000,320000
+R006,Marcus Bennett,SMB,West,2023-01-01,159000,344000
+R007,Elena Kowalski,Mid-Market,East,2022-05-01,320000,580000
+R008,Tyler Alvarez,Mid-Market,West,2024-12-01,275000,297000
+R009,Aisha Kim,Mid-Market,East,2023-01-01,287000,609000
+R010,Ryan Sullivan,Mid-Market,Central,2023-04-01,273000,695000
+R011,Natalie Reyes,Mid-Market,West,2024-08-01,295000,321000
+R012,Omar Fischer,Mid-Market,East,2024-11-01,324000,262000
+R013,Grace Adeyemi,Enterprise,Central,2022-10-01,626000,1133000
+R014,Kevin Novak,Enterprise,West,2024-06-01,641000,817000
+R015,Lucia Larsen,Enterprise,Central,2023-01-01,594000,1176000

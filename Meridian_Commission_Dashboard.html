@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meridian Risk Technologies — FY26 Commission Analytics</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/plotly.js/2.27.0/plotly.min.js"></script>
+<style>
+  :root{
+    --navy:#0F1B2D;
+    --slate:#1F3A5F;
+    --gold:#B8862B;
+    --gold-light:#E8C773;
+    --green:#2E7D5B;
+    --rust:#A6432E;
+    --bg:#F6F5F2;
+    --panel:#FFFFFF;
+    --line:#E1DED6;
+    --text:#23262E;
+    --muted:#6B7280;
+    --serif: Georgia, 'Iowan Old Style', 'Times New Roman', serif;
+    --sans: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    --mono: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);}
+
+  /* ---------- Header ---------- */
+  header{
+    background:var(--navy);
+    color:#fff;
+    padding:22px 36px 0 36px;
+  }
+  .brand-row{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+  .brand{font-family:var(--serif);font-size:22px;letter-spacing:0.3px;}
+  .brand span{color:var(--gold-light);}
+  .subtitle{font-family:var(--sans);font-size:13px;color:#B9C2D0;margin-top:2px;}
+  .asof{font-size:12px;color:#8C97A8;font-family:var(--mono);}
+
+  nav.tabs{
+    display:flex;gap:28px;margin-top:22px;border-bottom:1px solid rgba(255,255,255,0.12);
+  }
+  nav.tabs button{
+    background:none;border:none;color:#B9C2D0;font-family:var(--sans);font-size:14px;
+    padding:10px 2px 12px 2px;cursor:pointer;border-bottom:2px solid transparent;
+  }
+  nav.tabs button:hover{color:#fff;}
+  nav.tabs button.active{color:#fff;border-bottom:2px solid var(--gold);font-weight:600;}
+
+  /* ---------- Filter bar ---------- */
+  .filterbar{
+    background:var(--slate);
+    color:#DCE3EC;
+    padding:10px 36px;
+    display:flex;align-items:center;gap:22px;font-size:13px;
+  }
+  .filterbar .flabel{color:#AFC0D6;}
+  .filterbar select{
+    background:#284A73;color:#fff;border:1px solid #3B5C86;border-radius:3px;
+    font-family:var(--sans);font-size:13px;padding:5px 8px;
+  }
+  .filterbar .note{margin-left:auto;color:#93A6C0;font-style:italic;font-size:12px;}
+
+  main{padding:26px 36px 60px 36px;max-width:1440px;margin:0 auto;}
+
+  /* ---------- KPI strip ---------- */
+  .kpi-strip{
+    display:flex;background:var(--panel);border:1px solid var(--line);
+    margin-bottom:26px;overflow:hidden;
+  }
+  .kpi{
+    flex:1;padding:16px 20px;border-right:1px solid var(--line);
+  }
+  .kpi:last-child{border-right:none;}
+  .kpi .label{font-size:12px;color:var(--muted);margin-bottom:6px;}
+  .kpi .value{font-family:var(--mono);font-size:26px;font-weight:600;color:var(--navy);}
+  .kpi .value.gold{color:var(--gold);}
+  .kpi .delta{font-size:11.5px;margin-top:4px;color:var(--muted);}
+  .kpi .delta.pos{color:var(--green);}
+  .kpi .delta.neg{color:var(--rust);}
+
+  /* ---------- Panels / grid ---------- */
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+  .grid.wide{grid-template-columns:1.6fr 1fr;}
+  .panel{
+    background:var(--panel);border:1px solid var(--line);padding:18px 20px 8px 20px;
+  }
+  .panel h3{
+    font-family:var(--serif);font-size:16px;font-weight:normal;margin:0 0 2px 0;color:var(--navy);
+  }
+  .panel .pdesc{font-size:12px;color:var(--muted);margin-bottom:8px;}
+  .panel.span2{grid-column:1 / span 2;}
+
+  section.tabpanel{display:none;}
+  section.tabpanel.active{display:block;}
+
+  /* ---------- Rep table ---------- */
+  table.reps{width:100%;border-collapse:collapse;font-size:13px;}
+  table.reps th{
+    text-align:left;font-size:11.5px;color:var(--muted);font-weight:600;
+    border-bottom:1px solid var(--line);padding:8px 10px;cursor:pointer;user-select:none;
+  }
+  table.reps th:hover{color:var(--navy);}
+  table.reps td{padding:7px 10px;border-bottom:1px solid #F0EFEA;font-family:var(--mono);}
+  table.reps td.name{font-family:var(--sans);}
+  table.reps tr:hover td{background:#FAF9F6;}
+  .att-pill{display:inline-block;padding:2px 8px;border-radius:2px;font-size:12px;font-family:var(--mono);}
+  .att-hi{background:#E4F1EA;color:var(--green);}
+  .att-mid{background:#FBF1DC;color:#8A6416;}
+  .att-lo{background:#F7E5E1;color:var(--rust);}
+
+  .callout{
+    border-left:3px solid var(--gold);background:#FCF8ED;padding:12px 16px;font-size:13px;
+    margin-top:16px;color:#4A4130;
+  }
+  .callout b{color:var(--navy);}
+
+  footer{
+    padding:18px 36px 40px 36px;font-size:11.5px;color:var(--muted);max-width:1440px;margin:0 auto;
+    border-top:1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand-row">
+    <div>
+      <div class="brand">MERIDIAN RISK <span>TECHNOLOGIES</span></div>
+      <div class="subtitle">FY26 Sales Commission Analytics — Financial Planning &amp; Analysis</div>
+    </div>
+    <div class="asof">Data through Jun 30, 2026 · H1 actuals + Q3 forecast</div>
+  </div>
+  <nav class="tabs">
+    <button class="tab-btn active" data-tab="overview">Overview</button>
+    <button class="tab-btn" data-tab="reps">Rep Performance</button>
+    <button class="tab-btn" data-tab="trends">Deal Trends</button>
+    <button class="tab-btn" data-tab="forecast">Forecast</button>
+  </nav>
+</header>
+
+<div class="filterbar">
+  <span class="flabel">Quarter</span>
+  <select id="quarterFilter">
+    <option value="All">All (Q1–Q2)</option>
+    <option value="Q1">Q1 2026</option>
+    <option value="Q2">Q2 2026</option>
+  </select>
+  <span class="flabel">Segment</span>
+  <select id="segmentFilter">
+    <option value="All">All Segments</option>
+    <option value="SMB">SMB</option>
+    <option value="Mid-Market">Mid-Market</option>
+    <option value="Enterprise">Enterprise</option>
+  </select>
+  <span class="note">Filters apply to Overview, Rep Performance, and Deal Trends</span>
+</div>
+
+<main>
+
+  <div class="kpi-strip" id="kpiStrip"></div>
+
+  <!-- OVERVIEW -->
+  <section class="tabpanel active" id="tab-overview">
+    <div class="grid wide" style="margin-bottom:20px;">
+      <div class="panel">
+        <h3>Bookings ARR vs. Commission Expense</h3>
+        <div class="pdesc">Monthly, filtered to current selection</div>
+        <div id="chart-monthly" style="height:300px;"></div>
+      </div>
+      <div class="panel">
+        <h3>Bookings ARR Mix</h3>
+        <div class="pdesc">New Business / Upsell / Renewal</div>
+        <div id="chart-mix" style="height:300px;"></div>
+      </div>
+    </div>
+    <div class="grid">
+      <div class="panel">
+        <h3>Net Revenue Retention by Segment</h3>
+        <div class="pdesc">Renewed ARR ÷ ARR eligible to renew in period</div>
+        <div id="chart-nrr" style="height:260px;"></div>
+      </div>
+      <div class="panel">
+        <h3>Commission Expense as % of Bookings ARR</h3>
+        <div class="pdesc">Monthly ratio vs. ~6.5% plan target</div>
+        <div id="chart-ratio" style="height:260px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- REP PERFORMANCE -->
+  <section class="tabpanel" id="tab-reps">
+    <div class="grid wide">
+      <div class="panel">
+        <h3>Quota Attainment by Rep</h3>
+        <div class="pdesc">Sorted low to high — click column headers in the table to re-sort</div>
+        <div id="chart-attainment" style="height:460px;"></div>
+      </div>
+      <div class="panel">
+        <h3>Rep Detail</h3>
+        <div class="pdesc">Click a column to sort</div>
+        <div style="max-height:460px;overflow-y:auto;">
+          <table class="reps" id="repTable">
+            <thead><tr>
+              <th data-key="rep_name">Rep</th>
+              <th data-key="segment">Segment</th>
+              <th data-key="bookings">Bookings ARR</th>
+              <th data-key="commission">Commission</th>
+              <th data-key="attainment">Attainment</th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+    <div class="callout" id="repCallout"></div>
+  </section>
+
+  <!-- DEAL TRENDS -->
+  <section class="tabpanel" id="tab-trends">
+    <div class="grid">
+      <div class="panel">
+        <h3>Deal Volume by Month</h3>
+        <div class="pdesc">Number of closed-won deals</div>
+        <div id="chart-dealcount" style="height:300px;"></div>
+      </div>
+      <div class="panel">
+        <h3>ARR by Product Line</h3>
+        <div class="pdesc">Where bookings are concentrated</div>
+        <div id="chart-product" style="height:300px;"></div>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:20px;">
+      <div class="panel span2">
+        <h3>Average Deal Size by Type</h3>
+        <div class="pdesc">New Business deals are larger but less frequent than renewals</div>
+        <div id="chart-avgsize" style="height:260px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FORECAST -->
+  <section class="tabpanel" id="tab-forecast">
+    <div class="grid wide">
+      <div class="panel">
+        <h3>H1 Actuals + Q3 FY26 Forecast</h3>
+        <div class="pdesc">Linear trend on 6 months of actuals; commission applies trailing 6-month average rate</div>
+        <div id="chart-forecast" style="height:340px;"></div>
+      </div>
+      <div class="panel">
+        <h3>Q3 Forecast Summary</h3>
+        <div id="forecastSummary" style="font-size:14px;line-height:2.0;padding-top:8px;"></div>
+        <div class="callout">
+          <b>Method note:</b> this is a planning estimate for budget accrual, not a sales commitment.
+          It assumes Q3 bookings continue the H1 trend line and that the commission-to-bookings ratio
+          holds at its trailing six-month average (~6.5%). It does not account for seasonality, new-hire
+          ramp, or pipeline coverage — all of which FP&amp;A should sanity-check against the Q3 pipeline
+          review before this number goes into the board deck.
+        </div>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  Meridian Risk Technologies — FP&amp;A Sales Compensation. This dashboard reflects the same underlying
+  bookings data as the FY26 Commission Model workbook and the commission data-prep pipeline; all three
+  are built from one dataset so the numbers tie out across deliverables. Figures are illustrative.
+</footer>
+
+<script id="dashboard-data" type="application/json">
+{"deals": [{"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 8500.0, "commission_amount": 255.0, "product_line": "Policy Admin Core", "close_date": "2026-01-02", "customer_name": "Millbrook Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 140000.0, "commission_amount": 4200.0, "product_line": "Policy Admin Core", "close_date": "2026-01-03", "customer_name": "Windham Insurance Brokers"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 25000.0, "commission_amount": 1500.0, "product_line": "Claims Module", "close_date": "2026-01-04", "customer_name": "Redwood Insurance Solutions"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 12500.0, "commission_amount": 750.0, "product_line": "Policy Admin Core", "close_date": "2026-01-05", "customer_name": "Harborview Mutual Agency"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 9500.0, "commission_amount": 285.0, "product_line": "Policy Admin Core", "close_date": "2026-01-05", "customer_name": "Clearwater Underwriters"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 15500.0, "commission_amount": 1240.0, "product_line": "Claims Module", "close_date": "2026-01-05", "customer_name": "Windham Insurance Brokers"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 33500.0, "commission_amount": 2010.0, "product_line": "Policy Admin Core", "close_date": "2026-01-05", "customer_name": "Coastal Insurance Group"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 12500.0, "commission_amount": 750.0, "product_line": "Analytics Add-On", "close_date": "2026-01-05", "customer_name": "Sterling Mutual Agency"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 2000.0, "commission_amount": 60.0, "product_line": "Policy Admin Core", "close_date": "2026-01-06", "customer_name": "Hillcrest Insurance Solutions"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 2500.0, "commission_amount": 150.0, "product_line": "Client Portal", "close_date": "2026-01-07", "customer_name": "Riverbend Coverage Partners"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 3000.0, "commission_amount": 90.0, "product_line": "Policy Admin Core", "close_date": "2026-01-07", "customer_name": "Ironwood Risk Advisors"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 17500.0, "commission_amount": 525.0, "product_line": "Policy Admin Core", "close_date": "2026-01-07", "customer_name": "Stonebridge Insurance Brokers"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 5000.0, "commission_amount": 150.0, "product_line": "Policy Admin Core", "close_date": "2026-01-08", "customer_name": "Harborview Coverage Partners"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 31000.0, "commission_amount": 1860.0, "product_line": "Analytics Add-On", "close_date": "2026-01-08", "customer_name": "Summit Insurance Solutions"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 25500.0, "commission_amount": 1530.0, "product_line": "Policy Admin Core", "close_date": "2026-01-08", "customer_name": "Overlook Risk Advisors"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 66000.0, "commission_amount": 5280.0, "product_line": "Policy Admin Core", "close_date": "2026-01-10", "customer_name": "Bridgeway Insurance Solutions"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 29500.0, "commission_amount": 2488.9, "product_line": "Policy Admin Core", "close_date": "2026-01-12", "customer_name": "Meadowbrook Insurance Group"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 16000.0, "commission_amount": 960.0, "product_line": "Claims Module", "close_date": "2026-01-13", "customer_name": "Overlook Insurance Brokers"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 8500.0, "commission_amount": 510.0, "product_line": "Analytics Add-On", "close_date": "2026-01-13", "customer_name": "Cedarline Insurance Solutions"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 5000.0, "commission_amount": 150.0, "product_line": "Policy Admin Core", "close_date": "2026-01-13", "customer_name": "Northgate Insurance Brokers"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 7500.0, "commission_amount": 600.0, "product_line": "Policy Admin Core", "close_date": "2026-01-13", "customer_name": "Prairie Insurance Brokers"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 19000.0, "commission_amount": 570.0, "product_line": "Client Portal", "close_date": "2026-01-14", "customer_name": "Granite Coverage Partners"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 18000.0, "commission_amount": 1080.0, "product_line": "Analytics Add-On", "close_date": "2026-01-14", "customer_name": "Anchor Insurance Group"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 16000.0, "commission_amount": 960.0, "product_line": "Claims Module", "close_date": "2026-01-14", "customer_name": "Ironwood Underwriters"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 28500.0, "commission_amount": 855.0, "product_line": "Policy Admin Core", "close_date": "2026-01-16", "customer_name": "Fieldstone Insurance Brokers"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 121500.0, "commission_amount": 10703.7, "product_line": "Claims Module", "close_date": "2026-01-17", "customer_name": "Beacon Agency Partners"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 51000.0, "commission_amount": 3060.0, "product_line": "Claims Module", "close_date": "2026-01-17", "customer_name": "Vantage Risk Advisors"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 18500.0, "commission_amount": 555.0, "product_line": "Client Portal", "close_date": "2026-01-17", "customer_name": "Prairie Insurance Group"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 30500.0, "commission_amount": 915.0, "product_line": "Client Portal", "close_date": "2026-01-17", "customer_name": "Beacon Agency Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 51500.0, "commission_amount": 3090.0, "product_line": "Policy Admin Core", "close_date": "2026-01-17", "customer_name": "Harborview Underwriters"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 19500.0, "commission_amount": 1170.0, "product_line": "Claims Module", "close_date": "2026-01-19", "customer_name": "Vantage Risk Advisors"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 16500.0, "commission_amount": 495.0, "product_line": "Client Portal", "close_date": "2026-01-20", "customer_name": "Stonebridge Underwriters"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 78000.0, "commission_amount": 6240.0, "product_line": "Policy Admin Core", "close_date": "2026-01-21", "customer_name": "Summit Agency Partners"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 4500.0, "commission_amount": 135.0, "product_line": "Policy Admin Core", "close_date": "2026-01-22", "customer_name": "Riverbend Underwriters"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 4500.0, "commission_amount": 367.99, "product_line": "Analytics Add-On", "close_date": "2026-01-22", "customer_name": "Windham Insurance Solutions"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 58500.0, "commission_amount": 3510.0, "product_line": "Claims Module", "close_date": "2026-01-22", "customer_name": "Windham Coverage Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 32500.0, "commission_amount": 2606.35, "product_line": "Policy Admin Core", "close_date": "2026-01-23", "customer_name": "Highmark Risk Advisors"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Upsell", "arr_amount": 21000.0, "commission_amount": 1260.0, "product_line": "Claims Module", "close_date": "2026-01-24", "customer_name": "Prairie Risk Advisors"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 44000.0, "commission_amount": 3598.17, "product_line": "Claims Module", "close_date": "2026-01-25", "customer_name": "Cobalt Insurance Brokers"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 27000.0, "commission_amount": 2160.0, "product_line": "Claims Module", "close_date": "2026-01-25", "customer_name": "Pinnacle Insurance Solutions"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 146000.0, "commission_amount": 11680.0, "product_line": "Policy Admin Core", "close_date": "2026-01-26", "customer_name": "Northgate Coverage Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 15000.0, "commission_amount": 1202.93, "product_line": "Policy Admin Core", "close_date": "2026-01-27", "customer_name": "Pinnacle Insurance Group"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Policy Admin Core", "close_date": "2026-01-28", "customer_name": "Brookhaven Agency Partners"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-01", "deal_type": "New Business", "arr_amount": 42500.0, "commission_amount": 3400.0, "product_line": "Policy Admin Core", "close_date": "2026-01-28", "customer_name": "Brookhaven Insurance Group"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 11500.0, "commission_amount": 690.0, "product_line": "Claims Module", "close_date": "2026-02-02", "customer_name": "Ashford Mutual Agency"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 403500.0, "commission_amount": 32280.0, "product_line": "Analytics Add-On", "close_date": "2026-02-02", "customer_name": "Windham Mutual Agency"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 22500.0, "commission_amount": 1350.0, "product_line": "Analytics Add-On", "close_date": "2026-02-04", "customer_name": "Riverbend Insurance Solutions"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 542500.0, "commission_amount": 43400.0, "product_line": "Policy Admin Core", "close_date": "2026-02-04", "customer_name": "Overlook Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 112000.0, "commission_amount": 8960.0, "product_line": "Policy Admin Core", "close_date": "2026-02-04", "customer_name": "Coastal Underwriters"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 47000.0, "commission_amount": 3971.68, "product_line": "Client Portal", "close_date": "2026-02-05", "customer_name": "Millbrook Agency Partners"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 21000.0, "commission_amount": 1260.0, "product_line": "Policy Admin Core", "close_date": "2026-02-06", "customer_name": "Sterling Agency Partners"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 18000.0, "commission_amount": 540.0, "product_line": "Claims Module", "close_date": "2026-02-06", "customer_name": "Millbrook Mutual Agency"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 101500.0, "commission_amount": 3045.0, "product_line": "Policy Admin Core", "close_date": "2026-02-06", "customer_name": "Sterling Mutual Agency"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 61500.0, "commission_amount": 5417.92, "product_line": "Claims Module", "close_date": "2026-02-08", "customer_name": "Cedarline Underwriters"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 79000.0, "commission_amount": 2370.0, "product_line": "Analytics Add-On", "close_date": "2026-02-09", "customer_name": "Brookhaven Risk Advisors"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 65000.0, "commission_amount": 3900.0, "product_line": "Analytics Add-On", "close_date": "2026-02-10", "customer_name": "Sterling Insurance Brokers"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 14500.0, "commission_amount": 1185.76, "product_line": "Analytics Add-On", "close_date": "2026-02-10", "customer_name": "Northgate Insurance Brokers"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 38500.0, "commission_amount": 2310.0, "product_line": "Analytics Add-On", "close_date": "2026-02-10", "customer_name": "Riverbend Insurance Group"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 54000.0, "commission_amount": 4320.0, "product_line": "Policy Admin Core", "close_date": "2026-02-11", "customer_name": "Bridgeway Insurance Solutions"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 63500.0, "commission_amount": 5365.99, "product_line": "Policy Admin Core", "close_date": "2026-02-11", "customer_name": "Ashford Insurance Brokers"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 139500.0, "commission_amount": 11160.0, "product_line": "Claims Module", "close_date": "2026-02-11", "customer_name": "Overlook Mutual Agency"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 57000.0, "commission_amount": 1710.0, "product_line": "Policy Admin Core", "close_date": "2026-02-11", "customer_name": "Windham Insurance Solutions"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 17500.0, "commission_amount": 1400.0, "product_line": "Claims Module", "close_date": "2026-02-12", "customer_name": "Ironwood Insurance Solutions"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 28000.0, "commission_amount": 1680.0, "product_line": "Policy Admin Core", "close_date": "2026-02-14", "customer_name": "Beacon Agency Partners"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 19500.0, "commission_amount": 1170.0, "product_line": "Analytics Add-On", "close_date": "2026-02-14", "customer_name": "Meadowbrook Underwriters"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 13000.0, "commission_amount": 1040.0, "product_line": "Policy Admin Core", "close_date": "2026-02-14", "customer_name": "Granite Underwriters"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 26500.0, "commission_amount": 795.0, "product_line": "Policy Admin Core", "close_date": "2026-02-14", "customer_name": "Brookhaven Risk Advisors"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 81000.0, "commission_amount": 6480.0, "product_line": "Analytics Add-On", "close_date": "2026-02-14", "customer_name": "Ironwood Insurance Solutions"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 29500.0, "commission_amount": 2488.9, "product_line": "Claims Module", "close_date": "2026-02-14", "customer_name": "Sterling Insurance Group"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 33000.0, "commission_amount": 990.0, "product_line": "Policy Admin Core", "close_date": "2026-02-15", "customer_name": "Northgate Underwriters"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 2000.0, "commission_amount": 120.0, "product_line": "Policy Admin Core", "close_date": "2026-02-15", "customer_name": "Overlook Insurance Group"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 60500.0, "commission_amount": 3630.0, "product_line": "Analytics Add-On", "close_date": "2026-02-15", "customer_name": "Pinnacle Risk Advisors"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 64500.0, "commission_amount": 5160.0, "product_line": "Policy Admin Core", "close_date": "2026-02-16", "customer_name": "Meadowbrook Agency Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 32500.0, "commission_amount": 1950.0, "product_line": "Policy Admin Core", "close_date": "2026-02-16", "customer_name": "Lakeside Insurance Solutions"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 40000.0, "commission_amount": 1200.0, "product_line": "Claims Module", "close_date": "2026-02-16", "customer_name": "Highmark Insurance Solutions"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 28000.0, "commission_amount": 840.0, "product_line": "Policy Admin Core", "close_date": "2026-02-16", "customer_name": "Coastal Insurance Brokers"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 77000.0, "commission_amount": 6160.0, "product_line": "Policy Admin Core", "close_date": "2026-02-17", "customer_name": "Cedarline Mutual Agency"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 72000.0, "commission_amount": 2160.0, "product_line": "Policy Admin Core", "close_date": "2026-02-17", "customer_name": "Bridgeway Insurance Solutions"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 3500.0, "commission_amount": 105.0, "product_line": "Policy Admin Core", "close_date": "2026-02-17", "customer_name": "Stonebridge Coverage Partners"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 5500.0, "commission_amount": 165.0, "product_line": "Policy Admin Core", "close_date": "2026-02-18", "customer_name": "Coastal Coverage Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 42500.0, "commission_amount": 1275.0, "product_line": "Policy Admin Core", "close_date": "2026-02-18", "customer_name": "Sterling Underwriters"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 68500.0, "commission_amount": 5480.0, "product_line": "Policy Admin Core", "close_date": "2026-02-19", "customer_name": "Stonebridge Mutual Agency"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 19500.0, "commission_amount": 1647.82, "product_line": "Client Portal", "close_date": "2026-02-19", "customer_name": "Riverbend Insurance Group"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 36500.0, "commission_amount": 2190.0, "product_line": "Analytics Add-On", "close_date": "2026-02-21", "customer_name": "Cedarline Insurance Group"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 16500.0, "commission_amount": 495.0, "product_line": "Policy Admin Core", "close_date": "2026-02-22", "customer_name": "Redwood Underwriters"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Upsell", "arr_amount": 86500.0, "commission_amount": 5190.0, "product_line": "Client Portal", "close_date": "2026-02-23", "customer_name": "Meadowbrook Insurance Brokers"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 31000.0, "commission_amount": 2535.07, "product_line": "Policy Admin Core", "close_date": "2026-02-23", "customer_name": "Wrenfield Insurance Brokers"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 33000.0, "commission_amount": 990.0, "product_line": "Policy Admin Core", "close_date": "2026-02-24", "customer_name": "Hillcrest Insurance Brokers"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Analytics Add-On", "close_date": "2026-02-24", "customer_name": "Brookhaven Agency Partners"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 142000.0, "commission_amount": 11360.0, "product_line": "Analytics Add-On", "close_date": "2026-02-25", "customer_name": "Millbrook Agency Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-02", "deal_type": "New Business", "arr_amount": 9000.0, "commission_amount": 721.76, "product_line": "Policy Admin Core", "close_date": "2026-02-26", "customer_name": "Northgate Agency Partners"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 22000.0, "commission_amount": 660.0, "product_line": "Policy Admin Core", "close_date": "2026-02-27", "customer_name": "Anchor Coverage Partners"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 37000.0, "commission_amount": 1110.0, "product_line": "Claims Module", "close_date": "2026-02-27", "customer_name": "Stonebridge Mutual Agency"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-02", "deal_type": "Renewal", "arr_amount": 114500.0, "commission_amount": 3435.0, "product_line": "Client Portal", "close_date": "2026-02-28", "customer_name": "Ironwood Mutual Agency"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 223500.0, "commission_amount": 19689.52, "product_line": "Policy Admin Core", "close_date": "2026-03-02", "customer_name": "Riverbend Insurance Group"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 12000.0, "commission_amount": 720.0, "product_line": "Policy Admin Core", "close_date": "2026-03-02", "customer_name": "Millbrook Insurance Brokers"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 36500.0, "commission_amount": 3079.49, "product_line": "Policy Admin Core", "close_date": "2026-03-02", "customer_name": "Redwood Insurance Group"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 21500.0, "commission_amount": 1290.0, "product_line": "Policy Admin Core", "close_date": "2026-03-02", "customer_name": "Northgate Risk Advisors"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 14000.0, "commission_amount": 420.0, "product_line": "Claims Module", "close_date": "2026-03-03", "customer_name": "Redwood Insurance Group"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 49500.0, "commission_amount": 4182.94, "product_line": "Policy Admin Core", "close_date": "2026-03-04", "customer_name": "Overlook Insurance Brokers"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 22500.0, "commission_amount": 1350.0, "product_line": "Analytics Add-On", "close_date": "2026-03-06", "customer_name": "Overlook Agency Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 97000.0, "commission_amount": 7778.96, "product_line": "Policy Admin Core", "close_date": "2026-03-06", "customer_name": "Granite Risk Advisors"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 67000.0, "commission_amount": 5360.0, "product_line": "Claims Module", "close_date": "2026-03-08", "customer_name": "Anchor Underwriters"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 50500.0, "commission_amount": 4448.86, "product_line": "Analytics Add-On", "close_date": "2026-03-08", "customer_name": "Cobalt Risk Advisors"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 129500.0, "commission_amount": 3885.0, "product_line": "Claims Module", "close_date": "2026-03-09", "customer_name": "Bridgeway Risk Advisors"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 2000.0, "commission_amount": 60.0, "product_line": "Policy Admin Core", "close_date": "2026-03-09", "customer_name": "Overlook Risk Advisors"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 15000.0, "commission_amount": 450.0, "product_line": "Policy Admin Core", "close_date": "2026-03-09", "customer_name": "Pinnacle Insurance Solutions"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 17500.0, "commission_amount": 525.0, "product_line": "Policy Admin Core", "close_date": "2026-03-10", "customer_name": "Highmark Insurance Group"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 42500.0, "commission_amount": 1275.0, "product_line": "Policy Admin Core", "close_date": "2026-03-10", "customer_name": "Granite Underwriters"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 65500.0, "commission_amount": 1965.0, "product_line": "Claims Module", "close_date": "2026-03-11", "customer_name": "Harborview Insurance Brokers"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 26500.0, "commission_amount": 1590.0, "product_line": "Analytics Add-On", "close_date": "2026-03-11", "customer_name": "Vantage Coverage Partners"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 80500.0, "commission_amount": 6583.01, "product_line": "Claims Module", "close_date": "2026-03-11", "customer_name": "Cedarline Risk Advisors"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 90500.0, "commission_amount": 7240.0, "product_line": "Policy Admin Core", "close_date": "2026-03-12", "customer_name": "Meadowbrook Agency Partners"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 3000.0, "commission_amount": 240.0, "product_line": "Policy Admin Core", "close_date": "2026-03-13", "customer_name": "Ironwood Risk Advisors"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 17000.0, "commission_amount": 1436.56, "product_line": "Claims Module", "close_date": "2026-03-13", "customer_name": "Redwood Underwriters"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 43500.0, "commission_amount": 3670.07, "product_line": "Claims Module", "close_date": "2026-03-13", "customer_name": "Fieldstone Insurance Solutions"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 33000.0, "commission_amount": 2640.0, "product_line": "Policy Admin Core", "close_date": "2026-03-14", "customer_name": "Cedarline Coverage Partners"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 33500.0, "commission_amount": 1005.0, "product_line": "Claims Module", "close_date": "2026-03-14", "customer_name": "Harborview Insurance Solutions"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 47000.0, "commission_amount": 1410.0, "product_line": "Claims Module", "close_date": "2026-03-15", "customer_name": "Millbrook Mutual Agency"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 404000.0, "commission_amount": 32320.0, "product_line": "Policy Admin Core", "close_date": "2026-03-16", "customer_name": "Northgate Underwriters"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 3000.0, "commission_amount": 240.0, "product_line": "Policy Admin Core", "close_date": "2026-03-17", "customer_name": "Granite Risk Advisors"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 19000.0, "commission_amount": 570.0, "product_line": "Policy Admin Core", "close_date": "2026-03-17", "customer_name": "Ashford Insurance Brokers"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 128000.0, "commission_amount": 7680.0, "product_line": "Policy Admin Core", "close_date": "2026-03-18", "customer_name": "Prairie Underwriters"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 24000.0, "commission_amount": 720.0, "product_line": "Policy Admin Core", "close_date": "2026-03-18", "customer_name": "Vantage Coverage Partners"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 80500.0, "commission_amount": 4830.0, "product_line": "Claims Module", "close_date": "2026-03-18", "customer_name": "Overlook Underwriters"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 28000.0, "commission_amount": 2240.0, "product_line": "Policy Admin Core", "close_date": "2026-03-19", "customer_name": "Ironwood Insurance Group"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 10000.0, "commission_amount": 600.0, "product_line": "Policy Admin Core", "close_date": "2026-03-19", "customer_name": "Stonebridge Underwriters"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 117500.0, "commission_amount": 9400.0, "product_line": "Client Portal", "close_date": "2026-03-20", "customer_name": "Beacon Insurance Solutions"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 17000.0, "commission_amount": 510.0, "product_line": "Policy Admin Core", "close_date": "2026-03-21", "customer_name": "Pinnacle Risk Advisors"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 8500.0, "commission_amount": 255.0, "product_line": "Policy Admin Core", "close_date": "2026-03-21", "customer_name": "Anchor Coverage Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 50000.0, "commission_amount": 4000.0, "product_line": "Policy Admin Core", "close_date": "2026-03-22", "customer_name": "Sterling Agency Partners"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 2000.0, "commission_amount": 60.0, "product_line": "Client Portal", "close_date": "2026-03-22", "customer_name": "Meadowbrook Insurance Group"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 31500.0, "commission_amount": 2657.64, "product_line": "Analytics Add-On", "close_date": "2026-03-22", "customer_name": "Beacon Underwriters"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 10500.0, "commission_amount": 840.0, "product_line": "Policy Admin Core", "close_date": "2026-03-22", "customer_name": "Lakeside Insurance Brokers"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 151500.0, "commission_amount": 4545.0, "product_line": "Policy Admin Core", "close_date": "2026-03-23", "customer_name": "Beacon Insurance Group"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 100500.0, "commission_amount": 8040.0, "product_line": "Policy Admin Core", "close_date": "2026-03-23", "customer_name": "Fieldstone Coverage Partners"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 52500.0, "commission_amount": 1575.0, "product_line": "Policy Admin Core", "close_date": "2026-03-23", "customer_name": "Fieldstone Agency Partners"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "New Business", "arr_amount": 30000.0, "commission_amount": 2400.0, "product_line": "Analytics Add-On", "close_date": "2026-03-24", "customer_name": "Sterling Insurance Solutions"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Upsell", "arr_amount": 10500.0, "commission_amount": 630.0, "product_line": "Policy Admin Core", "close_date": "2026-03-24", "customer_name": "Northgate Agency Partners"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Policy Admin Core", "close_date": "2026-03-24", "customer_name": "Windham Insurance Solutions"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 14000.0, "commission_amount": 420.0, "product_line": "Analytics Add-On", "close_date": "2026-03-25", "customer_name": "Northgate Insurance Brokers"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 30500.0, "commission_amount": 915.0, "product_line": "Claims Module", "close_date": "2026-03-25", "customer_name": "Northgate Mutual Agency"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 28000.0, "commission_amount": 840.0, "product_line": "Claims Module", "close_date": "2026-03-27", "customer_name": "Windham Coverage Partners"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Analytics Add-On", "close_date": "2026-03-27", "customer_name": "Vantage Risk Advisors"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q1", "month": "2026-03", "deal_type": "Renewal", "arr_amount": 141000.0, "commission_amount": 4230.0, "product_line": "Policy Admin Core", "close_date": "2026-03-27", "customer_name": "Cedarline Risk Advisors"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 147500.0, "commission_amount": 4425.0, "product_line": "Policy Admin Core", "close_date": "2026-04-02", "customer_name": "Granite Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 51000.0, "commission_amount": 4080.0, "product_line": "Policy Admin Core", "close_date": "2026-04-02", "customer_name": "Overlook Insurance Solutions"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 23000.0, "commission_amount": 1840.0, "product_line": "Client Portal", "close_date": "2026-04-03", "customer_name": "Vantage Coverage Partners"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 35500.0, "commission_amount": 2989.99, "product_line": "Policy Admin Core", "close_date": "2026-04-03", "customer_name": "Cedarline Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 9500.0, "commission_amount": 760.0, "product_line": "Policy Admin Core", "close_date": "2026-04-03", "customer_name": "Summit Agency Partners"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 35000.0, "commission_amount": 3313.29, "product_line": "Claims Module", "close_date": "2026-04-04", "customer_name": "Ironwood Risk Advisors"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 3000.0, "commission_amount": 240.0, "product_line": "Policy Admin Core", "close_date": "2026-04-04", "customer_name": "Pinnacle Risk Advisors"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 121500.0, "commission_amount": 7290.0, "product_line": "Claims Module", "close_date": "2026-04-04", "customer_name": "Granite Agency Partners"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 49000.0, "commission_amount": 1470.0, "product_line": "Policy Admin Core", "close_date": "2026-04-05", "customer_name": "Highmark Insurance Group"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 25000.0, "commission_amount": 1500.0, "product_line": "Policy Admin Core", "close_date": "2026-04-05", "customer_name": "Stonebridge Agency Partners"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 44500.0, "commission_amount": 2670.0, "product_line": "Analytics Add-On", "close_date": "2026-04-05", "customer_name": "Summit Insurance Group"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 22000.0, "commission_amount": 660.0, "product_line": "Policy Admin Core", "close_date": "2026-04-06", "customer_name": "Harborview Insurance Brokers"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 70500.0, "commission_amount": 4230.0, "product_line": "Analytics Add-On", "close_date": "2026-04-08", "customer_name": "Summit Underwriters"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 11000.0, "commission_amount": 330.0, "product_line": "Claims Module", "close_date": "2026-04-08", "customer_name": "Summit Insurance Group"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 12500.0, "commission_amount": 375.0, "product_line": "Analytics Add-On", "close_date": "2026-04-08", "customer_name": "Cedarline Underwriters"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 17000.0, "commission_amount": 510.0, "product_line": "Claims Module", "close_date": "2026-04-09", "customer_name": "Cedarline Insurance Solutions"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 26500.0, "commission_amount": 1590.0, "product_line": "Policy Admin Core", "close_date": "2026-04-10", "customer_name": "Meadowbrook Underwriters"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 27500.0, "commission_amount": 1650.0, "product_line": "Analytics Add-On", "close_date": "2026-04-10", "customer_name": "Redwood Insurance Group"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 31000.0, "commission_amount": 1860.0, "product_line": "Analytics Add-On", "close_date": "2026-04-11", "customer_name": "Redwood Coverage Partners"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 428500.0, "commission_amount": 34315.92, "product_line": "Policy Admin Core", "close_date": "2026-04-13", "customer_name": "Lakeside Insurance Group"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 40000.0, "commission_amount": 3369.0, "product_line": "Policy Admin Core", "close_date": "2026-04-13", "customer_name": "Coastal Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 35000.0, "commission_amount": 1050.0, "product_line": "Analytics Add-On", "close_date": "2026-04-13", "customer_name": "Pinnacle Insurance Group"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Claims Module", "close_date": "2026-04-13", "customer_name": "Hillcrest Risk Advisors"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 37000.0, "commission_amount": 1110.0, "product_line": "Policy Admin Core", "close_date": "2026-04-14", "customer_name": "Prairie Coverage Partners"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 6500.0, "commission_amount": 390.0, "product_line": "Analytics Add-On", "close_date": "2026-04-14", "customer_name": "Anchor Mutual Agency"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 13000.0, "commission_amount": 780.0, "product_line": "Policy Admin Core", "close_date": "2026-04-15", "customer_name": "Brookhaven Insurance Solutions"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 33000.0, "commission_amount": 2779.43, "product_line": "Client Portal", "close_date": "2026-04-16", "customer_name": "Windham Coverage Partners"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 14000.0, "commission_amount": 420.0, "product_line": "Policy Admin Core", "close_date": "2026-04-18", "customer_name": "Brookhaven Insurance Group"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 36000.0, "commission_amount": 2970.43, "product_line": "Policy Admin Core", "close_date": "2026-04-18", "customer_name": "Pinnacle Agency Partners"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 10500.0, "commission_amount": 630.0, "product_line": "Policy Admin Core", "close_date": "2026-04-19", "customer_name": "Wrenfield Coverage Partners"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 233500.0, "commission_amount": 19197.2, "product_line": "Client Portal", "close_date": "2026-04-19", "customer_name": "Wrenfield Insurance Group"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 13500.0, "commission_amount": 810.0, "product_line": "Client Portal", "close_date": "2026-04-20", "customer_name": "Vantage Coverage Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 2500.0, "commission_amount": 75.0, "product_line": "Policy Admin Core", "close_date": "2026-04-22", "customer_name": "Granite Risk Advisors"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 133000.0, "commission_amount": 3990.0, "product_line": "Analytics Add-On", "close_date": "2026-04-22", "customer_name": "Brookhaven Mutual Agency"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 7000.0, "commission_amount": 560.0, "product_line": "Claims Module", "close_date": "2026-04-24", "customer_name": "Overlook Insurance Solutions"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 10000.0, "commission_amount": 300.0, "product_line": "Client Portal", "close_date": "2026-04-24", "customer_name": "Overlook Underwriters"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 22500.0, "commission_amount": 2129.97, "product_line": "Analytics Add-On", "close_date": "2026-04-24", "customer_name": "Windham Insurance Brokers"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 18500.0, "commission_amount": 555.0, "product_line": "Policy Admin Core", "close_date": "2026-04-24", "customer_name": "Cobalt Agency Partners"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 67500.0, "commission_amount": 2025.0, "product_line": "Policy Admin Core", "close_date": "2026-04-25", "customer_name": "Redwood Coverage Partners"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 49500.0, "commission_amount": 2970.0, "product_line": "Policy Admin Core", "close_date": "2026-04-25", "customer_name": "Summit Coverage Partners"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "Upsell", "arr_amount": 23000.0, "commission_amount": 1380.0, "product_line": "Policy Admin Core", "close_date": "2026-04-27", "customer_name": "Sterling Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 57500.0, "commission_amount": 4600.0, "product_line": "Policy Admin Core", "close_date": "2026-04-27", "customer_name": "Ashford Insurance Brokers"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 6500.0, "commission_amount": 520.0, "product_line": "Analytics Add-On", "close_date": "2026-04-27", "customer_name": "Ironwood Risk Advisors"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-04", "deal_type": "New Business", "arr_amount": 33500.0, "commission_amount": 2721.88, "product_line": "Client Portal", "close_date": "2026-04-27", "customer_name": "Cedarline Underwriters"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-04", "deal_type": "Renewal", "arr_amount": 3500.0, "commission_amount": 105.0, "product_line": "Policy Admin Core", "close_date": "2026-04-28", "customer_name": "Anchor Risk Advisors"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 5500.0, "commission_amount": 165.0, "product_line": "Policy Admin Core", "close_date": "2026-05-02", "customer_name": "Wrenfield Insurance Brokers"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 44500.0, "commission_amount": 3615.62, "product_line": "Claims Module", "close_date": "2026-05-02", "customer_name": "Prairie Insurance Brokers"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 21500.0, "commission_amount": 645.0, "product_line": "Claims Module", "close_date": "2026-05-03", "customer_name": "Overlook Underwriters"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 3500.0, "commission_amount": 105.0, "product_line": "Analytics Add-On", "close_date": "2026-05-03", "customer_name": "Harborview Insurance Group"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Upsell", "arr_amount": 30000.0, "commission_amount": 1800.0, "product_line": "Analytics Add-On", "close_date": "2026-05-03", "customer_name": "Pinnacle Insurance Group"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 17500.0, "commission_amount": 525.0, "product_line": "Policy Admin Core", "close_date": "2026-05-04", "customer_name": "Wrenfield Insurance Brokers"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 2000.0, "commission_amount": 60.0, "product_line": "Policy Admin Core", "close_date": "2026-05-04", "customer_name": "Meadowbrook Coverage Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 27500.0, "commission_amount": 2215.81, "product_line": "Claims Module", "close_date": "2026-05-06", "customer_name": "Millbrook Underwriters"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 41500.0, "commission_amount": 1245.0, "product_line": "Analytics Add-On", "close_date": "2026-05-06", "customer_name": "Bridgeway Agency Partners"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 52000.0, "commission_amount": 4160.0, "product_line": "Policy Admin Core", "close_date": "2026-05-07", "customer_name": "Sterling Mutual Agency"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 518000.0, "commission_amount": 49036.73, "product_line": "Policy Admin Core", "close_date": "2026-05-08", "customer_name": "Sterling Coverage Partners"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 570000.0, "commission_amount": 45600.0, "product_line": "Client Portal", "close_date": "2026-05-08", "customer_name": "Cedarline Coverage Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Upsell", "arr_amount": 9500.0, "commission_amount": 570.0, "product_line": "Claims Module", "close_date": "2026-05-09", "customer_name": "Harborview Insurance Brokers"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 64500.0, "commission_amount": 1935.0, "product_line": "Client Portal", "close_date": "2026-05-09", "customer_name": "Hillcrest Underwriters"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 110000.0, "commission_amount": 9076.31, "product_line": "Policy Admin Core", "close_date": "2026-05-10", "customer_name": "Clearwater Insurance Group"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 25000.0, "commission_amount": 750.0, "product_line": "Claims Module", "close_date": "2026-05-10", "customer_name": "Millbrook Risk Advisors"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 22000.0, "commission_amount": 1760.0, "product_line": "Policy Admin Core", "close_date": "2026-05-11", "customer_name": "Highmark Insurance Brokers"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Upsell", "arr_amount": 33500.0, "commission_amount": 2010.0, "product_line": "Claims Module", "close_date": "2026-05-11", "customer_name": "Clearwater Insurance Brokers"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 3000.0, "commission_amount": 241.73, "product_line": "Claims Module", "close_date": "2026-05-12", "customer_name": "Millbrook Agency Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 5000.0, "commission_amount": 150.0, "product_line": "Claims Module", "close_date": "2026-05-12", "customer_name": "Cedarline Mutual Agency"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 138000.0, "commission_amount": 11040.0, "product_line": "Claims Module", "close_date": "2026-05-14", "customer_name": "Vantage Agency Partners"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 22000.0, "commission_amount": 660.0, "product_line": "Client Portal", "close_date": "2026-05-14", "customer_name": "Sterling Agency Partners"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 3500.0, "commission_amount": 105.0, "product_line": "Claims Module", "close_date": "2026-05-16", "customer_name": "Hillcrest Coverage Partners"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 58500.0, "commission_amount": 1755.0, "product_line": "Policy Admin Core", "close_date": "2026-05-17", "customer_name": "Wrenfield Underwriters"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 155500.0, "commission_amount": 4665.0, "product_line": "Policy Admin Core", "close_date": "2026-05-18", "customer_name": "Highmark Insurance Solutions"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Upsell", "arr_amount": 11500.0, "commission_amount": 690.0, "product_line": "Policy Admin Core", "close_date": "2026-05-18", "customer_name": "Millbrook Insurance Brokers"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Upsell", "arr_amount": 34500.0, "commission_amount": 2070.0, "product_line": "Policy Admin Core", "close_date": "2026-05-19", "customer_name": "Clearwater Insurance Brokers"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 30000.0, "commission_amount": 2400.0, "product_line": "Policy Admin Core", "close_date": "2026-05-19", "customer_name": "Anchor Coverage Partners"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 14000.0, "commission_amount": 420.0, "product_line": "Policy Admin Core", "close_date": "2026-05-21", "customer_name": "Fieldstone Insurance Group"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 136000.0, "commission_amount": 11221.62, "product_line": "Claims Module", "close_date": "2026-05-21", "customer_name": "Brookhaven Mutual Agency"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 18500.0, "commission_amount": 555.0, "product_line": "Policy Admin Core", "close_date": "2026-05-21", "customer_name": "Windham Insurance Solutions"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 26000.0, "commission_amount": 2189.85, "product_line": "Policy Admin Core", "close_date": "2026-05-24", "customer_name": "Meadowbrook Insurance Group"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 27500.0, "commission_amount": 825.0, "product_line": "Policy Admin Core", "close_date": "2026-05-25", "customer_name": "Vantage Insurance Group"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 14500.0, "commission_amount": 1160.0, "product_line": "Policy Admin Core", "close_date": "2026-05-25", "customer_name": "Lakeside Underwriters"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 61500.0, "commission_amount": 4920.0, "product_line": "Policy Admin Core", "close_date": "2026-05-27", "customer_name": "Granite Insurance Brokers"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 30000.0, "commission_amount": 900.0, "product_line": "Policy Admin Core", "close_date": "2026-05-28", "customer_name": "Overlook Agency Partners"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-05", "deal_type": "Renewal", "arr_amount": 4000.0, "commission_amount": 120.0, "product_line": "Claims Module", "close_date": "2026-05-28", "customer_name": "Windham Coverage Partners"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-05", "deal_type": "New Business", "arr_amount": 168000.0, "commission_amount": 13454.08, "product_line": "Policy Admin Core", "close_date": "2026-05-28", "customer_name": "Northgate Insurance Solutions"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 11000.0, "commission_amount": 330.0, "product_line": "Claims Module", "close_date": "2026-06-02", "customer_name": "Overlook Mutual Agency"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Upsell", "arr_amount": 33000.0, "commission_amount": 1980.0, "product_line": "Policy Admin Core", "close_date": "2026-06-02", "customer_name": "Brookhaven Risk Advisors"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 8500.0, "commission_amount": 684.89, "product_line": "Analytics Add-On", "close_date": "2026-06-02", "customer_name": "Bridgeway Coverage Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 32000.0, "commission_amount": 960.0, "product_line": "Claims Module", "close_date": "2026-06-03", "customer_name": "Redwood Underwriters"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 50500.0, "commission_amount": 4069.04, "product_line": "Policy Admin Core", "close_date": "2026-06-03", "customer_name": "Coastal Underwriters"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 66000.0, "commission_amount": 5362.5, "product_line": "Policy Admin Core", "close_date": "2026-06-04", "customer_name": "Millbrook Agency Partners"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 322000.0, "commission_amount": 25760.0, "product_line": "Policy Admin Core", "close_date": "2026-06-04", "customer_name": "Ironwood Agency Partners"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 27000.0, "commission_amount": 810.0, "product_line": "Analytics Add-On", "close_date": "2026-06-04", "customer_name": "Millbrook Risk Advisors"}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 179000.0, "commission_amount": 5370.0, "product_line": "Policy Admin Core", "close_date": "2026-06-04", "customer_name": "Bridgeway Insurance Brokers"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 67000.0, "commission_amount": 5398.53, "product_line": "Client Portal", "close_date": "2026-06-05", "customer_name": "Cedarline Underwriters"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 71500.0, "commission_amount": 2145.0, "product_line": "Policy Admin Core", "close_date": "2026-06-05", "customer_name": "Harborview Coverage Partners"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 20500.0, "commission_amount": 1640.0, "product_line": "Claims Module", "close_date": "2026-06-06", "customer_name": "Pinnacle Insurance Solutions"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 28500.0, "commission_amount": 855.0, "product_line": "Claims Module", "close_date": "2026-06-06", "customer_name": "Hillcrest Insurance Solutions"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 238500.0, "commission_amount": 19080.0, "product_line": "Policy Admin Core", "close_date": "2026-06-07", "customer_name": "Northgate Insurance Brokers"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 112500.0, "commission_amount": 3375.0, "product_line": "Policy Admin Core", "close_date": "2026-06-07", "customer_name": "Beacon Insurance Solutions"}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 73500.0, "commission_amount": 6042.8, "product_line": "Policy Admin Core", "close_date": "2026-06-07", "customer_name": "Anchor Insurance Solutions"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 72000.0, "commission_amount": 5760.0, "product_line": "Client Portal", "close_date": "2026-06-08", "customer_name": "Ironwood Insurance Solutions"}, {"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 5000.0, "commission_amount": 150.0, "product_line": "Policy Admin Core", "close_date": "2026-06-08", "customer_name": "Granite Insurance Brokers"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Policy Admin Core", "close_date": "2026-06-10", "customer_name": "Bridgeway Risk Advisors"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 45500.0, "commission_amount": 3640.0, "product_line": "Analytics Add-On", "close_date": "2026-06-10", "customer_name": "Bridgeway Insurance Brokers"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 32500.0, "commission_amount": 2681.64, "product_line": "Policy Admin Core", "close_date": "2026-06-11", "customer_name": "Fieldstone Insurance Group"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 50000.0, "commission_amount": 1500.0, "product_line": "Analytics Add-On", "close_date": "2026-06-12", "customer_name": "Overlook Insurance Solutions"}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 13000.0, "commission_amount": 390.0, "product_line": "Policy Admin Core", "close_date": "2026-06-12", "customer_name": "Brookhaven Coverage Partners"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 25000.0, "commission_amount": 750.0, "product_line": "Client Portal", "close_date": "2026-06-13", "customer_name": "Redwood Insurance Brokers"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 132500.0, "commission_amount": 10600.0, "product_line": "Policy Admin Core", "close_date": "2026-06-14", "customer_name": "Meadowbrook Insurance Brokers"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 59000.0, "commission_amount": 1770.0, "product_line": "Policy Admin Core", "close_date": "2026-06-14", "customer_name": "Beacon Insurance Solutions"}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 5000.0, "commission_amount": 150.0, "product_line": "Policy Admin Core", "close_date": "2026-06-16", "customer_name": "Stonebridge Insurance Brokers"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 18500.0, "commission_amount": 555.0, "product_line": "Policy Admin Core", "close_date": "2026-06-16", "customer_name": "Hillcrest Coverage Partners"}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 80500.0, "commission_amount": 2415.0, "product_line": "Policy Admin Core", "close_date": "2026-06-20", "customer_name": "Riverbend Underwriters"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Upsell", "arr_amount": 16500.0, "commission_amount": 990.0, "product_line": "Policy Admin Core", "close_date": "2026-06-21", "customer_name": "Bridgeway Risk Advisors"}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 76500.0, "commission_amount": 6120.0, "product_line": "Policy Admin Core", "close_date": "2026-06-22", "customer_name": "Anchor Coverage Partners"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 1500.0, "commission_amount": 45.0, "product_line": "Policy Admin Core", "close_date": "2026-06-22", "customer_name": "Overlook Insurance Group"}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 3000.0, "commission_amount": 240.0, "product_line": "Analytics Add-On", "close_date": "2026-06-23", "customer_name": "Overlook Agency Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 14000.0, "commission_amount": 420.0, "product_line": "Policy Admin Core", "close_date": "2026-06-24", "customer_name": "Summit Insurance Brokers"}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 12500.0, "commission_amount": 375.0, "product_line": "Policy Admin Core", "close_date": "2026-06-25", "customer_name": "Brookhaven Insurance Brokers"}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 5000.0, "commission_amount": 150.0, "product_line": "Policy Admin Core", "close_date": "2026-06-25", "customer_name": "Cedarline Agency Partners"}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 13000.0, "commission_amount": 390.0, "product_line": "Claims Module", "close_date": "2026-06-25", "customer_name": "Highmark Insurance Brokers"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "Upsell", "arr_amount": 29500.0, "commission_amount": 1770.0, "product_line": "Policy Admin Core", "close_date": "2026-06-26", "customer_name": "Meadowbrook Agency Partners"}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 18500.0, "commission_amount": 555.0, "product_line": "Client Portal", "close_date": "2026-06-26", "customer_name": "Highmark Insurance Solutions"}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 43500.0, "commission_amount": 3480.0, "product_line": "Policy Admin Core", "close_date": "2026-06-27", "customer_name": "Vantage Insurance Solutions"}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarter": "Q2", "month": "2026-06", "deal_type": "Renewal", "arr_amount": 13500.0, "commission_amount": 405.0, "product_line": "Policy Admin Core", "close_date": "2026-06-28", "customer_name": "Riverbend Mutual Agency"}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarter": "Q2", "month": "2026-06", "deal_type": "New Business", "arr_amount": 65500.0, "commission_amount": 5516.74, "product_line": "Client Portal", "close_date": "2026-06-28", "customer_name": "Brookhaven Risk Advisors"}], "roster": [{"rep_id": "R001", "rep_name": "Maria Chen", "segment": "SMB", "region": "West", "quarterly_quota_new_arr": 160000, "starting_book_arr": 302000}, {"rep_id": "R002", "rep_name": "James Okafor", "segment": "SMB", "region": "West", "quarterly_quota_new_arr": 135000, "starting_book_arr": 40000}, {"rep_id": "R003", "rep_name": "Priya Patel", "segment": "SMB", "region": "East", "quarterly_quota_new_arr": 137000, "starting_book_arr": 311000}, {"rep_id": "R004", "rep_name": "David Nguyen", "segment": "SMB", "region": "East", "quarterly_quota_new_arr": 155000, "starting_book_arr": 152000}, {"rep_id": "R005", "rep_name": "Sofia Rossi", "segment": "SMB", "region": "West", "quarterly_quota_new_arr": 152000, "starting_book_arr": 320000}, {"rep_id": "R006", "rep_name": "Marcus Bennett", "segment": "SMB", "region": "West", "quarterly_quota_new_arr": 159000, "starting_book_arr": 344000}, {"rep_id": "R007", "rep_name": "Elena Kowalski", "segment": "Mid-Market", "region": "East", "quarterly_quota_new_arr": 320000, "starting_book_arr": 580000}, {"rep_id": "R008", "rep_name": "Tyler Alvarez", "segment": "Mid-Market", "region": "West", "quarterly_quota_new_arr": 275000, "starting_book_arr": 297000}, {"rep_id": "R009", "rep_name": "Aisha Kim", "segment": "Mid-Market", "region": "East", "quarterly_quota_new_arr": 287000, "starting_book_arr": 609000}, {"rep_id": "R010", "rep_name": "Ryan Sullivan", "segment": "Mid-Market", "region": "Central", "quarterly_quota_new_arr": 273000, "starting_book_arr": 695000}, {"rep_id": "R011", "rep_name": "Natalie Reyes", "segment": "Mid-Market", "region": "West", "quarterly_quota_new_arr": 295000, "starting_book_arr": 321000}, {"rep_id": "R012", "rep_name": "Omar Fischer", "segment": "Mid-Market", "region": "East", "quarterly_quota_new_arr": 324000, "starting_book_arr": 262000}, {"rep_id": "R013", "rep_name": "Grace Adeyemi", "segment": "Enterprise", "region": "Central", "quarterly_quota_new_arr": 626000, "starting_book_arr": 1133000}, {"rep_id": "R014", "rep_name": "Kevin Novak", "segment": "Enterprise", "region": "West", "quarterly_quota_new_arr": 641000, "starting_book_arr": 817000}, {"rep_id": "R015", "rep_name": "Lucia Larsen", "segment": "Enterprise", "region": "Central", "quarterly_quota_new_arr": 594000, "starting_book_arr": 1176000}]}
+</script>
+<script>
+const RAW = JSON.parse(document.getElementById('dashboard-data').textContent);
+const DEALS = RAW.deals;
+const ROSTER = RAW.roster;
+
+const COLORS = {
+  navy: '#0F1B2D', slate: '#1F3A5F', gold: '#B8862B', goldLight: '#E8C773',
+  green: '#2E7D5B', rust: '#A6432E', muted: '#8A93A3', line: '#E1DED6'
+};
+
+const FONT = { family: 'Segoe UI, Arial, sans-serif', color: '#23262E', size: 12 };
+const MONOFONT = { family: 'SFMono-Regular, Consolas, monospace', color: '#23262E', size: 12 };
+
+// Precomputed H1 monthly actuals + Q3 trend forecast (company-wide, matches Excel/ETL exactly)
+const FORECAST_MONTHS = ['2026-07','2026-08','2026-09'];
+const ACTUAL_MONTHS = ['2026-01','2026-02','2026-03','2026-04','2026-05','2026-06'];
+
+let state = { quarter: 'All', segment: 'All', sortKey: 'attainment', sortDir: 'asc' };
+
+// ---------- Filtering ----------
+function filteredDeals() {
+  return DEALS.filter(d => {
+    const qOk = state.quarter === 'All' || d.quarter === state.quarter;
+    const sOk = state.segment === 'All' || d.segment === state.segment;
+    return qOk && sOk;
+  });
+}
+function quartersSelected() { return state.quarter === 'All' ? 2 : 1; }
+
+function repsInScope() {
+  return ROSTER.filter(r => state.segment === 'All' || r.segment === state.segment);
+}
+
+// ---------- Aggregation helpers ----------
+function sum(arr, fn) { return arr.reduce((a, x) => a + fn(x), 0); }
+
+function computeKPIs(deals) {
+  const bookings = sum(deals, d => d.arr_amount);
+  const commission = sum(deals, d => d.commission_amount);
+  const dealCount = deals.length;
+  const reps = repsInScope();
+  const nQ = quartersSelected();
+  const totalQuota = sum(reps, r => r.quarterly_quota_new_arr) * nQ;
+  const newBiz = sum(deals.filter(d => d.deal_type === 'New Business'), d => d.arr_amount);
+  const attainment = totalQuota > 0 ? newBiz / totalQuota : 0;
+  return { bookings, commission, dealCount, attainment, commissionPct: bookings > 0 ? commission / bookings : 0 };
+}
+
+function computeByMonth(deals) {
+  const months = [...new Set(deals.map(d => d.month))].sort();
+  return months.map(m => {
+    const md = deals.filter(d => d.month === m);
+    return { month: m, bookings: sum(md, d => d.arr_amount), commission: sum(md, d => d.commission_amount), count: md.length };
+  });
+}
+
+function computeByRep(deals) {
+  const reps = repsInScope();
+  const nQ = quartersSelected();
+  return reps.map(r => {
+    const rd = deals.filter(d => d.rep_id === r.rep_id);
+    const bookings = sum(rd, d => d.arr_amount);
+    const commission = sum(rd, d => d.commission_amount);
+    const newBiz = sum(rd.filter(d => d.deal_type === 'New Business'), d => d.arr_amount);
+    const quota = r.quarterly_quota_new_arr * nQ;
+    const attainment = quota > 0 ? newBiz / quota : 0;
+    return { rep_id: r.rep_id, rep_name: r.rep_name, segment: r.segment, bookings, commission, attainment };
+  }).sort((a, b) => a.attainment - b.attainment);
+}
+
+function computeByType(deals) {
+  const types = ['New Business', 'Upsell', 'Renewal'];
+  return types.map(t => {
+    const td = deals.filter(d => d.deal_type === t);
+    return { type: t, arr: sum(td, d => d.arr_amount), count: td.length,
+             avg: td.length ? sum(td, d => d.arr_amount) / td.length : 0 };
+  });
+}
+
+function computeByProduct(deals) {
+  const products = [...new Set(deals.map(d => d.product_line))];
+  return products.map(p => ({ product: p, arr: sum(deals.filter(d => d.product_line === p), d => d.arr_amount) }))
+    .sort((a, b) => b.arr - a.arr);
+}
+
+function computeNRR(deals) {
+  const segs = ['SMB', 'Mid-Market', 'Enterprise'].filter(s => state.segment === 'All' || s === state.segment);
+  const nQ = quartersSelected();
+  return segs.map(seg => {
+    const segReps = ROSTER.filter(r => r.segment === seg);
+    const renewed = sum(deals.filter(d => d.deal_type === 'Renewal' && d.segment === seg), d => d.arr_amount);
+    const eligibleBook = sum(segReps, r => r.starting_book_arr) * 0.25 * nQ;
+    return { segment: seg, nrr: eligibleBook > 0 ? renewed / eligibleBook : 0 };
+  });
+}
+
+// ---------- Formatting ----------
+const fmtUSD = v => '$' + Math.round(v).toLocaleString('en-US');
+const fmtUSDk = v => '$' + Math.round(v/1000).toLocaleString('en-US') + 'K';
+const fmtPct = v => (v * 100).toFixed(1) + '%';
+
+// ---------- Rendering: KPI strip ----------
+function renderKPIs() {
+  const deals = filteredDeals();
+  const k = computeKPIs(deals);
+  const target = 0.065;
+  const delta = k.commissionPct - target;
+  const el = document.getElementById('kpiStrip');
+  el.innerHTML = `
+    <div class="kpi"><div class="label">Bookings ARR</div><div class="value">${fmtUSD(k.bookings)}</div></div>
+    <div class="kpi"><div class="label">Commission Expense</div><div class="value">${fmtUSD(k.commission)}</div></div>
+    <div class="kpi"><div class="label">Commission % of ARR</div><div class="value gold">${fmtPct(k.commissionPct)}</div>
+      <div class="delta ${delta<=0?'pos':'neg'}">${delta<=0?'▼':'▲'} ${fmtPct(Math.abs(delta))} vs. 6.5% target</div></div>
+    <div class="kpi"><div class="label">Avg Attainment</div><div class="value">${fmtPct(k.attainment)}</div></div>
+    <div class="kpi"><div class="label">Closed-Won Deals</div><div class="value">${k.dealCount}</div></div>
+  `;
+}
+
+// ---------- Rendering: Overview charts ----------
+function renderOverview() {
+  const deals = filteredDeals();
+  const monthly = computeByMonth(deals);
+  const months = monthly.map(m => m.month);
+
+  Plotly.newPlot('chart-monthly', [
+    { x: months, y: monthly.map(m => m.bookings), type: 'bar', name: 'Bookings ARR',
+      marker: { color: COLORS.slate } },
+    { x: months, y: monthly.map(m => m.commission), type: 'scatter', mode: 'lines+markers',
+      name: 'Commission Expense', yaxis: 'y2', line: { color: COLORS.gold, width: 3 },
+      marker: { color: COLORS.gold, size: 7 } }
+  ], {
+    font: FONT, margin: { t: 10, l: 60, r: 60, b: 40 },
+    yaxis: { title: 'Bookings ARR ($)', tickformat: '$,.0s' },
+    yaxis2: { title: 'Commission ($)', overlaying: 'y', side: 'right', tickformat: '$,.0s' },
+    legend: { orientation: 'h', y: -0.2 }, plot_bgcolor: '#fff', paper_bgcolor: '#fff'
+  }, { displayModeBar: false, responsive: true });
+
+  const byType = computeByType(deals);
+  Plotly.newPlot('chart-mix', [{
+    labels: byType.map(t => t.type), values: byType.map(t => t.arr), type: 'pie', hole: 0.45,
+    marker: { colors: [COLORS.navy, COLORS.gold, COLORS.slate] },
+    textinfo: 'label+percent', textfont: FONT
+  }], { font: FONT, margin: { t: 10, l: 10, r: 10, b: 10 }, showlegend: false,
+        plot_bgcolor: '#fff', paper_bgcolor: '#fff' }, { displayModeBar: false, responsive: true });
+
+  const nrr = computeNRR(deals);
+  Plotly.newPlot('chart-nrr', [{
+    x: nrr.map(n => n.segment), y: nrr.map(n => n.nrr), type: 'bar',
+    marker: { color: nrr.map(n => n.nrr >= 1 ? COLORS.green : COLORS.rust) },
+    text: nrr.map(n => fmtPct(n.nrr)), textposition: 'outside'
+  }], { font: FONT, margin: { t: 10, l: 50, r: 20, b: 40 }, yaxis: { tickformat: '.0%', title: 'NRR' },
+        shapes: [{ type: 'line', x0: -0.5, x1: 2.5, y0: 1, y1: 1, line: { color: COLORS.muted, dash: 'dot' } }],
+        plot_bgcolor: '#fff', paper_bgcolor: '#fff' }, { displayModeBar: false, responsive: true });
+
+  Plotly.newPlot('chart-ratio', [{
+    x: months, y: monthly.map(m => m.bookings > 0 ? m.commission / m.bookings : 0),
+    type: 'scatter', mode: 'lines+markers', line: { color: COLORS.slate, width: 2.5 },
+    marker: { color: COLORS.slate, size: 6 }, name: 'Actual %'
+  }], {
+    font: FONT, margin: { t: 10, l: 50, r: 20, b: 40 }, yaxis: { tickformat: '.1%', title: 'Commission % of ARR' },
+    shapes: [{ type: 'line', x0: months[0], x1: months[months.length-1], y0: 0.065, y1: 0.065,
+               line: { color: COLORS.gold, dash: 'dash' } }],
+    annotations: [{ x: months[months.length-1], y: 0.065, text: 'Plan target 6.5%', showarrow: false,
+                    yshift: 12, font: { size: 11, color: COLORS.gold } }],
+    plot_bgcolor: '#fff', paper_bgcolor: '#fff'
+  }, { displayModeBar: false, responsive: true });
+}
+
+// ---------- Rendering: Rep Performance ----------
+function attColor(a) { return a >= 1 ? COLORS.green : a >= 0.85 ? COLORS.gold : COLORS.rust; }
+function attClass(a) { return a >= 1 ? 'att-hi' : a >= 0.85 ? 'att-mid' : 'att-lo'; }
+
+function renderReps() {
+  const deals = filteredDeals();
+  const byRep = computeByRep(deals);
+
+  Plotly.newPlot('chart-attainment', [{
+    y: byRep.map(r => r.rep_name), x: byRep.map(r => r.attainment), type: 'bar', orientation: 'h',
+    marker: { color: byRep.map(r => attColor(r.attainment)) },
+    text: byRep.map(r => fmtPct(r.attainment)), textposition: 'outside'
+  }], {
+    font: FONT, margin: { t: 10, l: 130, r: 40, b: 40 }, xaxis: { tickformat: '.0%', title: 'Attainment' },
+    shapes: [{ type: 'line', x0: 1, x1: 1, y0: -0.5, y1: byRep.length - 0.5, line: { color: COLORS.muted, dash: 'dot' } }],
+    plot_bgcolor: '#fff', paper_bgcolor: '#fff'
+  }, { displayModeBar: false, responsive: true });
+
+  renderRepTable(byRep);
+
+  const top = [...byRep].sort((a,b) => b.attainment - a.attainment)[0];
+  const bottom = byRep[0];
+  document.getElementById('repCallout').innerHTML =
+    `<b>${top.rep_name}</b> leads the current selection at ${fmtPct(top.attainment)} of quota, while
+     <b>${bottom.rep_name}</b> is lowest at ${fmtPct(bottom.attainment)} — worth a 1:1 before quarter close
+     if that gap holds through the rest of the period.`;
+}
+
+function renderRepTable(byRep) {
+  const sorted = [...byRep].sort((a, b) => {
+    const dir = state.sortDir === 'asc' ? 1 : -1;
+    if (typeof a[state.sortKey] === 'string') return a[state.sortKey].localeCompare(b[state.sortKey]) * dir;
+    return (a[state.sortKey] - b[state.sortKey]) * dir;
+  });
+  const tbody = document.querySelector('#repTable tbody');
+  tbody.innerHTML = sorted.map(r => `
+    <tr>
+      <td class="name">${r.rep_name}</td>
+      <td class="name">${r.segment}</td>
+      <td>${fmtUSD(r.bookings)}</td>
+      <td>${fmtUSD(r.commission)}</td>
+      <td><span class="att-pill ${attClass(r.attainment)}">${fmtPct(r.attainment)}</span></td>
+    </tr>`).join('');
+}
+
+// ---------- Rendering: Deal Trends ----------
+function renderTrends() {
+  const deals = filteredDeals();
+  const monthly = computeByMonth(deals);
+  Plotly.newPlot('chart-dealcount', [{
+    x: monthly.map(m => m.month), y: monthly.map(m => m.count), type: 'bar', marker: { color: COLORS.navy }
+  }], { font: FONT, margin: { t: 10, l: 40, r: 20, b: 40 }, yaxis: { title: 'Deals' },
+        plot_bgcolor: '#fff', paper_bgcolor: '#fff' }, { displayModeBar: false, responsive: true });
+
+  const byProduct = computeByProduct(deals);
+  Plotly.newPlot('chart-product', [{
+    x: byProduct.map(p => p.arr), y: byProduct.map(p => p.product), type: 'bar', orientation: 'h',
+    marker: { color: COLORS.slate }
+  }], { font: FONT, margin: { t: 10, l: 140, r: 30, b: 40 }, xaxis: { tickformat: '$,.0s' },
+        plot_bgcolor: '#fff', paper_bgcolor: '#fff' }, { displayModeBar: false, responsive: true });
+
+  const byType = computeByType(deals);
+  Plotly.newPlot('chart-avgsize', [{
+    x: byType.map(t => t.type), y: byType.map(t => t.avg), type: 'bar',
+    marker: { color: [COLORS.navy, COLORS.gold, COLORS.slate] },
+    text: byType.map(t => fmtUSD(t.avg)), textposition: 'outside'
+  }], { font: FONT, margin: { t: 10, l: 60, r: 20, b: 40 }, yaxis: { title: 'Avg deal size ($)', tickformat: '$,.0s' },
+        plot_bgcolor: '#fff', paper_bgcolor: '#fff' }, { displayModeBar: false, responsive: true });
+}
+
+// ---------- Rendering: Forecast (company-wide, not filter-reactive) ----------
+function renderForecast() {
+  const allDeals = DEALS;
+  const monthly = computeByMonth(allDeals);
+  const avgRate = sum(monthly, m => m.commission) / sum(monthly, m => m.bookings);
+
+  // simple linear regression over 6 actual months for bookings ARR
+  const ys = monthly.map(m => m.bookings);
+  const n = ys.length;
+  const xs = ys.map((_, i) => i + 1);
+  const xbar = xs.reduce((a,b)=>a+b,0)/n, ybar = ys.reduce((a,b)=>a+b,0)/n;
+  const slope = xs.reduce((a,x,i)=>a+(x-xbar)*(ys[i]-ybar),0) / xs.reduce((a,x)=>a+(x-xbar)**2,0);
+  const intercept = ybar - slope*xbar;
+  const forecastBookings = FORECAST_MONTHS.map((_, i) => intercept + slope*(n+i+1));
+  const forecastCommission = forecastBookings.map(b => b * avgRate);
+
+  const allMonths = ACTUAL_MONTHS.concat(FORECAST_MONTHS);
+  const bookingsAll = ys.concat(forecastBookings);
+  const commissionAll = monthly.map(m => m.commission).concat(forecastCommission);
+  const splitIdx = ACTUAL_MONTHS.length - 1;
+
+  Plotly.newPlot('chart-forecast', [
+    { x: allMonths.slice(0, splitIdx+1), y: bookingsAll.slice(0, splitIdx+1), type: 'bar',
+      name: 'Bookings ARR (Actual)', marker: { color: COLORS.slate } },
+    { x: allMonths.slice(splitIdx), y: bookingsAll.slice(splitIdx), type: 'bar',
+      name: 'Bookings ARR (Forecast)', marker: { color: COLORS.slate, opacity: 0.4 } },
+    { x: allMonths, y: commissionAll, type: 'scatter', mode: 'lines+markers', name: 'Commission Expense',
+      yaxis: 'y2', line: { color: COLORS.gold, width: 3 }, marker: { color: COLORS.gold, size: 7 } }
+  ], {
+    font: FONT, margin: { t: 10, l: 60, r: 60, b: 40 },
+    yaxis: { title: 'Bookings ARR ($)', tickformat: '$,.0s' },
+    yaxis2: { title: 'Commission ($)', overlaying: 'y', side: 'right', tickformat: '$,.0s' },
+    legend: { orientation: 'h', y: -0.2 }, barmode: 'overlay',
+    plot_bgcolor: '#fff', paper_bgcolor: '#fff'
+  }, { displayModeBar: false, responsive: true });
+
+  const q3Bookings = forecastBookings.reduce((a,b)=>a+b,0);
+  const q3Commission = forecastCommission.reduce((a,b)=>a+b,0);
+  document.getElementById('forecastSummary').innerHTML = `
+    <div><span style="color:var(--muted)">Forecasted Q3 Bookings ARR</span><br>
+      <span style="font-family:var(--mono);font-size:22px;color:var(--navy);">${fmtUSD(q3Bookings)}</span></div>
+    <div style="margin-top:10px;"><span style="color:var(--muted)">Forecasted Q3 Commission Expense</span><br>
+      <span style="font-family:var(--mono);font-size:22px;color:var(--gold);">${fmtUSD(q3Commission)}</span></div>
+    <div style="margin-top:10px;"><span style="color:var(--muted)">Trailing commission rate applied</span><br>
+      <span style="font-family:var(--mono);font-size:16px;">${fmtPct(avgRate)}</span></div>
+  `;
+}
+
+// ---------- Tabs & filters ----------
+function renderAll() {
+  renderKPIs();
+  renderOverview();
+  renderReps();
+  renderTrends();
+  renderForecast();
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tabpanel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+    window.dispatchEvent(new Event('resize'));
+  });
+});
+
+document.getElementById('quarterFilter').addEventListener('change', e => { state.quarter = e.target.value; renderKPIs(); renderOverview(); renderReps(); renderTrends(); });
+document.getElementById('segmentFilter').addEventListener('change', e => { state.segment = e.target.value; renderKPIs(); renderOverview(); renderReps(); renderTrends(); });
+
+document.querySelectorAll('#repTable th').forEach(th => {
+  th.addEventListener('click', () => {
+    const key = th.dataset.key;
+    if (state.sortKey === key) { state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc'; }
+    else { state.sortKey = key; state.sortDir = 'asc'; }
+    renderRepTable(computeByRep(filteredDeals()));
+  });
+});
+
+renderAll();
+
+</script>
+</body>
+</html>

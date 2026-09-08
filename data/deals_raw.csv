@@ -1,0 +1,273 @@
+deal_id,rep_id,close_date,deal_type,customer_name,arr_amount,product_line
+D00033,R002,2026-01-02,Renewal,Millbrook Coverage Partners,8500.0,Policy Admin Core
+D00133,R007,2026-01-03,Renewal,Windham Insurance Brokers,140000.0,Policy Admin Core
+D00219,R012,2026-01-04,Upsell,Redwood Insurance Solutions,25000.0,Claims Module
+D00069,R004,2026-01-05,Upsell,Harborview Mutual Agency,12500.0,Policy Admin Core
+D00188,R010,2026-01-05,Renewal,Clearwater Underwriters,9500.0,Policy Admin Core
+D00004,R001,2026-01-05,New Business,Windham Insurance Brokers,15500.0,Claims Module
+D00145,R008,2026-01-05,Upsell,Coastal Insurance Group,33500.0,Policy Admin Core
+D00200,R011,2026-01-05,Upsell,Sterling Mutual Agency,12500.0,Analytics Add-On
+D00186,R010,2026-01-06,Renewal,Hillcrest Insurance Solutions,2000.0,Policy Admin Core
+D00030,R002,2026-01-07,Upsell,Riverbend Coverage Partners,2500.0,Client Portal
+D00265,R015,2026-01-07,Renewal,Ironwood Risk Advisors,3000.0,Policy Admin Core
+D00222,R012,2026-01-07,Renewal,Stonebridge Insurance Brokers,17500.0,Policy Admin Core
+D00224,R012,2026-01-08,Renewal,Harborview Coverage Partners,5000.0,Policy Admin Core
+D00183,R010,2026-01-08,Upsell,Summit Insurance Solutions,31000.0,Analytics Add-On
+D00047,R003,2026-01-08,Upsell,Overlook Risk Advisors,25500.0,Policy Admin Core
+D00128,R007,2026-01-10,New Business,Bridgeway Insurance Solutions,66000.0,Policy Admin Core
+D00027,R002,2026-01-12,New Business,Meadowbrook Insurance Group,29500.0,Policy Admin Core
+D00087,R005,2026-01-13,Upsell,Overlook Insurance Brokers,16000.0,Claims Module
+D00071,R004,2026-01-13,Upsell,Cedarline Insurance Solutions,8500.0,Analytics Add-On
+D00052,R003,2026-01-13,Renewal,Northgate Insurance Brokers,5000.0,Policy Admin Core
+D00044,R003,2026-01-13,New Business,Prairie Insurance Brokers,7500.0,Policy Admin Core
+D00074,R004,2026-01-14,Renewal,Granite Coverage Partners,19000.0,Client Portal
+D00220,R012,2026-01-14,Upsell,Anchor Insurance Group,18000.0,Analytics Add-On
+D00070,R004,2026-01-14,Upsell,Ironwood Underwriters,16000.0,Claims Module
+D00205,R011,2026-01-16,Renewal,Fieldstone Insurance Brokers,28500.0,Policy Admin Core
+D00216,R012,2026-01-17,New Business,Beacon Agency Partners,121500.0,Claims Module
+D00248,R014,2026-01-17,Upsell,Vantage Risk Advisors,51000.0,Claims Module
+D00168,R009,2026-01-17,Renewal,Prairie Insurance Group,18500.0,Client Portal
+D00264,R015,2026-01-17,Renewal,Beacon Agency Partners,30500.0,Client Portal
+D00132,R007,2026-01-17,Upsell,Harborview Underwriters,51500.0,Policy Admin Core
+D00199,R011,2026-01-19,Upsell,Vantage Risk Advisors,19500.0,Claims Module
+D00206,R011,2026-01-20,Renewal,Stonebridge Underwriters,16500.0,Client Portal
+D00043,R003,2026-01-21,New Business,Summit Agency Partners,78000.0,Policy Admin Core
+D00009,R001,2026-01-22,Renewal,Riverbend Underwriters,4500.0,Policy Admin Core
+D00184,R010,2026-01-22,Upsell,Pinnacle Risk Advisors,,Claims Module
+D00104,R006,2026-01-22,New Business,Windham Insurance Solutions,4500.0,Analytics Add-On
+D00165,R009,2026-01-22,Upsell,Windham Coverage Partners,58500.0,Claims Module
+D00086,R005,2026-01-23,New Business,Highmark Risk Advisors,32500.0,Policy Admin Core
+D00107,R006,2026-01-24,Upsell,Prairie Risk Advisors,21000.0,Claims Module
+D00102,R006,2026-01-25,New Business,Cobalt Insurance Brokers,44000.0,Claims Module
+D00003,R001,2026-01-25,New Business,Pinnacle Insurance Solutions,27000.0,Claims Module
+D00142,R008,2026-01-26,New Business,Northgate Coverage Partners,146000.0,Policy Admin Core
+D00085,R005,2026-01-27,New Business,Pinnacle Insurance Group,15000.0,Policy Admin Core
+D00148,R008,2026-01-28,Renewal,Brookhaven Agency Partners,1500.0,Policy Admin Core
+D00002,R001,2026-01-28,New Business,Brookhaven Insurance Group,42500.0,Policy Admin Core
+D00006,R001,2026-02-02,Upsell,Ashford Mutual Agency,11500.0,Claims Module
+D00232,R013,2026-02-02,New Business,Windham Mutual Agency,403500.0,Analytics Add-On
+D00108,R006,2026-02-04,Upsell,Riverbend Insurance Solutions,22500.0,Analytics Add-On
+D00257,R015,2026-02-04,New Business,Overlook Coverage Partners,542500.0,Policy Admin Core
+D00127,R007,2026-02-04,New Business,Coastal Underwriters,112000.0,Policy Admin Core
+D00065,R004,2026-02-05,New Business,Millbrook Agency Partners,47000.0,Client Portal
+D00109,R006,2026-02-06,Upsell,Sterling Agency Partners,21000.0,Policy Admin Core
+D00110,R006,2026-02-06,Renewal,Millbrook Mutual Agency,18000.0,Claims Module
+D00235,R013,2026-02-06,Renewal,Sterling Mutual Agency,101500.0,Policy Admin Core
+D00217,R012,2026-02-08,New Business,Cedarline Underwriters,61500.0,Claims Module
+D00147,R008,2026-02-09,Renewal,Brookhaven Risk Advisors,79000.0,Analytics Add-On
+D00131,R007,2026-02-10,Upsell,Sterling Insurance Brokers,65000.0,Analytics Add-On
+D00105,R006,2026-02-10,New Business,Northgate Insurance Brokers,14500.0,Analytics Add-On
+D00247,R014,2026-02-10,Upsell,Riverbend Insurance Group,38500.0,Analytics Add-On
+D00001,R001,2026-02-11,New Business,Bridgeway Insurance Solutions,54000.0,Policy Admin Core
+D00066,R004,2026-02-11,New Business,Ashford Insurance Brokers,63500.0,Policy Admin Core
+D00196,R011,2026-02-11,New Business,Overlook Mutual Agency,139500.0,Claims Module
+D00250,R014,2026-02-11,Renewal,Windham Insurance Solutions,57000.0,Policy Admin Core
+D00197,R011,2026-02-12,New Business,Ironwood Insurance Solutions,17500.0,Claims Module
+D00144,R008,2026-02-14,Upsell,Beacon Agency Partners,28000.0,Policy Admin Core
+D00008,R001,2026-02-14,Upsell,Meadowbrook Underwriters,19500.0,Analytics Add-On
+D00161,R009,2026-02-14,New Business,Granite Underwriters,13000.0,Policy Admin Core
+D00012,R001,2026-02-14,Renewal,Brookhaven Risk Advisors,26500.0,Policy Admin Core
+D00129,R007,2026-02-14,New Business,Ironwood Insurance Solutions,81000.0,Analytics Add-On
+D00025,R002,2026-02-14,New Business,Sterling Insurance Group,29500.0,Claims Module
+D00169,R009,2026-02-15,Renewal,Northgate Underwriters,33000.0,Policy Admin Core
+D00031,R002,2026-02-15,Upsell,Overlook Insurance Group,2000.0,Policy Admin Core
+D00234,R013,2026-02-15,Upsell,Pinnacle Risk Advisors,60500.0,Analytics Add-On
+D00141,R008,2026-02-16,New Business,Meadowbrook Agency Partners,64500.0,Policy Admin Core
+D00130,R007,2026-02-16,Upsell,Lakeside Insurance Solutions,32500.0,Policy Admin Core
+D00090,R005,2026-02-16,Renewal,Highmark Insurance Solutions,40000.0,Claims Module
+D00251,R014,2026-02-16,Renewal,Coastal Insurance Brokers,28000.0,Policy Admin Core
+D00198,R011,2026-02-17,New Business,Cedarline Mutual Agency,77000.0,Policy Admin Core
+D00263,R015,2026-02-17,Renewal,Bridgeway Insurance Solutions,72000.0,Policy Admin Core
+D00091,R005,2026-02-17,Renewal,Stonebridge Coverage Partners,3500.0,Policy Admin Core
+D00073,R004,2026-02-18,Renewal,Coastal Coverage Partners,5500.0,Policy Admin Core
+D00089,R005,2026-02-18,Renewal,Sterling Underwriters,42500.0,Policy Admin Core
+D00164,R009,2026-02-19,New Business,Stonebridge Mutual Agency,68500.0,Policy Admin Core
+D00067,R004,2026-02-19,New Business,Riverbend Insurance Group,19500.0,Client Portal
+D00233,R013,2026-02-21,Upsell,Cedarline Insurance Group,36500.0,Analytics Add-On
+D00170,R009,2026-02-22,Renewal,Redwood Underwriters,16500.0,Policy Admin Core
+D00259,R015,2026-02-23,Upsell,Meadowbrook Insurance Brokers,86500.0,Client Portal
+D00103,R006,2026-02-23,New Business,Wrenfield Insurance Brokers,31000.0,Policy Admin Core
+D00189,R010,2026-02-24,Renewal,Hillcrest Insurance Brokers,33000.0,Policy Admin Core
+D00048,R003,2026-02-24,Renewal,Brookhaven Agency Partners,1500.0,Analytics Add-On
+D00181,R010,2026-02-25,New Business,Millbrook Agency Partners,142000.0,Analytics Add-On
+D00084,R005,2026-02-26,New Business,Northgate Agency Partners,9000.0,Policy Admin Core
+D00185,R010,2026-02-27,Renewal,Anchor Coverage Partners,22000.0,Policy Admin Core
+D00167,R009,2026-02-27,Renewal,Stonebridge Mutual Agency,37000.0,Claims Module
+D00187,R010,2026-02-28,Renewal,Ironwood Mutual Agency,114500.0,Client Portal
+D00218,R012,2026-03-02,New Business,Riverbend Insurance Group,223500.0,Policy Admin Core
+D00146,R008,2026-03-02,Upsell,Millbrook Insurance Brokers,12000.0,Policy Admin Core
+D00028,R002,2026-03-02,New Business,Redwood Insurance Group,36500.0,Policy Admin Core
+D00088,R005,2026-03-02,Upsell,Northgate Risk Advisors,21500.0,Policy Admin Core
+D00072,R004,2026-03-03,Renewal,Redwood Insurance Group,14000.0,Claims Module
+D00064,R004,2026-03-04,New Business,Overlook Insurance Brokers,49500.0,Policy Admin Core
+D00007,R001,2026-03-06,Upsell,Overlook Agency Partners,22500.0,Analytics Add-On
+D00083,R005,2026-03-06,New Business,Granite Risk Advisors,97000.0,Policy Admin Core
+D00163,R009,2026-03-08,New Business,Anchor Underwriters,67000.0,Claims Module
+D00215,R012,2026-03-08,New Business,Cobalt Risk Advisors,50500.0,Analytics Add-On
+D00249,R014,2026-03-09,Renewal,Bridgeway Risk Advisors,129500.0,Claims Module
+D00112,R006,2026-03-09,Renewal,Overlook Risk Advisors,2000.0,Policy Admin Core
+D00202,R011,2026-03-09,Renewal,Pinnacle Insurance Solutions,15000.0,Policy Admin Core
+D00013,R001,2026-03-10,Renewal,Highmark Insurance Group,17500.0,Policy Admin Core
+D00223,R012,2026-03-10,Renewal,Granite Underwriters,42500.0,Policy Admin Core
+D00236,R013,2026-03-11,Renewal,Harborview Insurance Brokers,65500.0,Claims Module
+D00221,R012,2026-03-11,Upsell,Vantage Coverage Partners,26500.0,Analytics Add-On
+D00106,R006,2026-03-11,New Business,Cedarline Risk Advisors,80500.0,Claims Module
+D00179,R010,2026-03-12,New Business,Meadowbrook Agency Partners,90500.0,Policy Admin Core
+D00005,R001,2026-03-13,New Business,Ironwood Risk Advisors,3000.0,Policy Admin Core
+D00068,R004,2026-03-13,New Business,Redwood Underwriters,17000.0,Claims Module
+D00026,R002,2026-03-13,New Business,Fieldstone Insurance Solutions,43500.0,Claims Module
+D00195,R011,2026-03-14,New Business,Cedarline Coverage Partners,33000.0,Policy Admin Core
+D00166,R009,2026-03-14,Renewal,Harborview Insurance Solutions,33500.0,Claims Module
+D00113,R006,2026-03-15,Renewal,Millbrook Mutual Agency,47000.0,Claims Module
+D00245,R014,2026-03-16,New Business,Northgate Underwriters,404000.0,Policy Admin Core
+D00042,R003,2026-03-17,New Business,Granite Risk Advisors,3000.0,Policy Admin Core
+D00049,R003,2026-03-17,Renewal,Ashford Insurance Brokers,19000.0,Policy Admin Core
+D00258,R015,2026-03-18,Upsell,Prairie Underwriters,128000.0,Policy Admin Core
+D00262,R015,2026-03-18,Renewal,Vantage Coverage Partners,24000.0,Policy Admin Core
+D00260,R015,2026-03-18,Upsell,Overlook Underwriters,80500.0,Claims Module
+D00180,R010,2026-03-19,New Business,Ironwood Insurance Group,28000.0,Policy Admin Core
+D00201,R011,2026-03-19,Upsell,Stonebridge Underwriters,10000.0,Policy Admin Core
+D00162,R009,2026-03-20,New Business,Beacon Insurance Solutions,117500.0,Client Portal
+D00010,R001,2026-03-21,Renewal,Pinnacle Risk Advisors,17000.0,Policy Admin Core
+D00011,R001,2026-03-21,Renewal,Anchor Coverage Partners,8500.0,Policy Admin Core
+D00143,R008,2026-03-22,New Business,Sterling Agency Partners,50000.0,Policy Admin Core
+D00204,R011,2026-03-22,Renewal,Meadowbrook Insurance Group,2000.0,Client Portal
+D00029,R002,2026-03-22,New Business,Beacon Underwriters,31500.0,Analytics Add-On
+D00182,R010,2026-03-22,New Business,Lakeside Insurance Brokers,10500.0,Policy Admin Core
+D00237,R013,2026-03-23,Renewal,Beacon Insurance Group,151500.0,Policy Admin Core
+D00246,R014,2026-03-23,New Business,Fieldstone Coverage Partners,100500.0,Policy Admin Core
+D00051,R003,2026-03-23,Renewal,Fieldstone Agency Partners,52500.0,Policy Admin Core
+D00045,R003,2026-03-24,New Business,Sterling Insurance Solutions,30000.0,Analytics Add-On
+D00046,R003,2026-03-24,Upsell,Northgate Agency Partners,10500.0,Policy Admin Core
+D00050,R003,2026-03-24,Renewal,Windham Insurance Solutions,1500.0,Policy Admin Core
+D00134,R007,2026-03-25,Renewal,Northgate Insurance Brokers,14000.0,Analytics Add-On
+D00111,R006,2026-03-25,Renewal,Northgate Mutual Agency,30500.0,Claims Module
+D00203,R011,2026-03-27,Renewal,Windham Coverage Partners,28000.0,Claims Module
+D00032,R002,2026-03-27,Renewal,Vantage Risk Advisors,1500.0,Analytics Add-On
+D00261,R015,2026-03-27,Renewal,Cedarline Risk Advisors,141000.0,Policy Admin Core
+D00254,R014,2026-04-02,Renewal,Granite Coverage Partners,147500.0,Policy Admin Core
+D00136,R007,2026-04-02,New Business,Overlook Insurance Solutions,51000.0,Policy Admin Core
+D00076,R004,2026-04-03,New Business,Vantage Coverage Partners,23000.0,Client Portal
+D00114,R006,2026-04-03,New Business,Cedarline Coverage Partners,35500.0,Policy Admin Core
+D00137,R007,2026-04-03,New Business,Summit Agency Partners,9500.0,Policy Admin Core
+D00226,R012,2026-04-04,New Business,Ironwood Risk Advisors,35000.0,Claims Module
+D00017,R001,2026-04-04,New Business,Pinnacle Risk Advisors,3000.0,Policy Admin Core
+D00240,R013,2026-04-04,Upsell,Granite Agency Partners,121500.0,Claims Module
+D00213,R011,2026-04-05,Renewal,Highmark Insurance Group,49000.0,Policy Admin Core
+D00153,R008,2026-04-05,Upsell,Stonebridge Agency Partners,25000.0,Policy Admin Core
+D00173,R009,2026-04-05,Upsell,Summit Insurance Group,44500.0,Analytics Add-On
+D00060,R003,2026-04-06,Renewal,Harborview Insurance Brokers,22000.0,Policy Admin Core
+D00241,R013,2026-04-08,Upsell,Summit Underwriters,70500.0,Analytics Add-On
+D00059,R003,2026-04-08,Renewal,Summit Insurance Group,11000.0,Claims Module
+D00122,R006,2026-04-08,Renewal,Cedarline Underwriters,12500.0,Analytics Add-On
+D00079,R004,2026-04-09,Renewal,Cedarline Insurance Solutions,17000.0,Claims Module
+D00211,R011,2026-04-10,Upsell,Meadowbrook Underwriters,26500.0,Policy Admin Core
+D00021,R001,2026-04-10,Upsell,Redwood Insurance Group,27500.0,Analytics Add-On
+D00119,R006,2026-04-11,Upsell,Redwood Coverage Partners,31000.0,Analytics Add-On
+D00266,R015,2026-04-13,New Business,Lakeside Insurance Group,428500.0,Policy Admin Core
+D00116,R006,2026-04-13,New Business,Coastal Coverage Partners,40000.0,Policy Admin Core
+D00140,R007,2026-04-13,Renewal,Pinnacle Insurance Group,35000.0,Analytics Add-On
+D00039,R002,2026-04-13,Renewal,Hillcrest Risk Advisors,1500.0,Claims Module
+D00255,R014,2026-04-14,Renewal,Prairie Coverage Partners,37000.0,Policy Admin Core
+D00078,R004,2026-04-14,Upsell,Anchor Mutual Agency,6500.0,Analytics Add-On
+D00057,R003,2026-04-15,Upsell,Brookhaven Insurance Solutions,13000.0,Policy Admin Core
+D00117,R006,2026-04-16,New Business,Windham Coverage Partners,33000.0,Client Portal
+D00062,R003,2026-04-18,Renewal,Brookhaven Insurance Group,14000.0,Policy Admin Core
+D00149,R008,2026-04-18,New Business,Pinnacle Agency Partners,36000.0,Policy Admin Core
+D00229,R012,2026-04-19,Upsell,Wrenfield Coverage Partners,10500.0,Policy Admin Core
+D00191,R010,2026-04-19,New Business,Wrenfield Insurance Group,233500.0,Client Portal
+D00154,R008,2026-04-20,Upsell,Vantage Coverage Partners,13500.0,Client Portal
+D00160,R008,2026-04-22,Renewal,Granite Risk Advisors,2500.0,Policy Admin Core
+D00077,R004,2026-04-22,renewal ,Brookhaven Mutual Agency,133000.0,Analytics Add-On
+D00208,R011,2026-04-24,New Business,Overlook Insurance Solutions,7000.0,Claims Module
+D00023,R001,2026-04-24,Renewal,Overlook Underwriters,10000.0,Client Portal
+D00225,R012,2026-04-24,New Business,Windham Insurance Brokers,22500.0,Analytics Add-On
+D00099,R005,2026-04-24,Renewal,Cobalt Agency Partners,18500.0,Policy Admin Core
+D00243,R013,2026-04-25,Renewal,Redwood Coverage Partners,67500.0,Policy Admin Core
+D00192,R010,2026-04-25,Upsell,Summit Coverage Partners,49500.0,Policy Admin Core
+D00019,R001,2026-04-27,Upsell,Sterling Coverage Partners,23000.0,Policy Admin Core
+D00135,R007,2026-04-27,New Business,Ashford Insurance Brokers,57500.0,Policy Admin Core
+D00016,R001,2026-04-27,New Business,Ironwood Risk Advisors,6500.0,Analytics Add-On
+D00034,R002,2026-04-27,New Business,Cedarline Underwriters,33500.0,Client Portal
+D00244,r013,2026-04-28,Renewal,Anchor Risk Advisors,3500.0,Policy Admin Core
+D00097,R005,2026-05-02,Renewal,Wrenfield Insurance Brokers,5500.0,Policy Admin Core
+D00035,R002,2026-05-02,New Business,Prairie Insurance Brokers,44500.0,Claims Module
+D00175,R009,2026-05-03,Renewal,Overlook Underwriters,21500.0,Claims Module
+D00080,R004,2026-05-03,Renewal,Harborview Insurance Group,3500.0,Analytics Add-On
+D00056,R003,2026-05-03,Upsell,Pinnacle Insurance Group,30000.0,Analytics Add-On
+D00176,R009,2026-05-04,Renewal,Wrenfield Insurance Brokers,17500.0,Policy Admin Core
+D00037,R002,2026-05-04,Renewal,Meadowbrook Coverage Partners,2000.0,Policy Admin Core
+D00093,R005,2026-05-06,New Business,Millbrook Underwriters,27500.0,Claims Module
+D00177,R009,2026-05-06,Renewal,Bridgeway Agency Partners,41500.0,Analytics Add-On
+D00238,R013,2026-05-07,New Business,Sterling Mutual Agency,52000.0,Policy Admin Core
+D00227,R012,2026-05-08,New Business,Sterling Coverage Partners,518000.0,Policy Admin Core
+D00252,R014,2026-05-08,New Business,Cedarline Coverage Partners,570000.0,Client Portal
+D00155,R008,2026-05-09,Upsell,Harborview Insurance Brokers,9500.0,Claims Module
+D00024,R001,2026-05-09,Renewal,Hillcrest Underwriters,64500.0,Client Portal
+D00150,R008,2026-05-10,New Business,Clearwater Insurance Group,110000.0,Policy Admin Core
+D00193,R010,2026-05-10,Renewal,Millbrook Risk Advisors,25000.0,Claims Module
+D00015,R001,2026-05-11,New Business,Highmark Insurance Brokers,22000.0,Policy Admin Core
+D00020,R001,2026-05-11,Upsell,Clearwater Insurance Brokers,33500.0,Claims Module
+D00095,R005,2026-05-12,New Business,Millbrook Agency Partners,3000.0,Claims Module
+D00159,R008,2026-05-12,Renewal,Cedarline Mutual Agency,5000.0,Claims Module
+D00210,R011,2026-05-14,New Business,Vantage Agency Partners,138000.0,Claims Module
+D00101,R005,2026-05-14,Renewal,Sterling Agency Partners,22000.0,Client Portal
+D00038,R002,2026-05-16,Renewal,Hillcrest Coverage Partners,3500.0,Claims Module
+D00178,R009,2026-05-17,Renewal,Wrenfield Underwriters,58500.0,Policy Admin Core
+D00194,R010,2026-05-18,Renewal,Highmark Insurance Solutions,155500.0,Policy Admin Core
+D00058,R003,2026-05-18,Upsell,Millbrook Insurance Brokers,11500.0,Policy Admin Core
+D00212,R011,2026-05-19,Upsell,Clearwater Insurance Brokers,34500.0,Policy Admin Core
+D00055,R003,2026-05-19,New Business,Anchor Coverage Partners,30000.0,Policy Admin Core
+D00081,R004,2026-05-21,Renewal,Fieldstone Insurance Group,14000.0,Policy Admin Core
+D00152,R008,2026-05-21,New Business,Brookhaven Mutual Agency,136000.0,Claims Module
+D00125,R006,2026-05-21,Renewal,Windham Insurance Solutions,18500.0,Policy Admin Core
+D00118,R006,2026-05-24,New Business,Meadowbrook Insurance Group,26000.0,Policy Admin Core
+D00124,R006,2026-05-25,Renewal,Vantage Insurance Group,27500.0,Policy Admin Core
+D00171,R009,2026-05-25,New Business,Lakeside Underwriters   ,14500.0,Policy Admin Core
+D00018,R001,2026-05-27,New Business,Granite Insurance Brokers,61500.0,Policy Admin Core
+D00214,R011,2026-05-28,Renewal,Overlook Agency Partners,30000.0,Policy Admin Core
+D00082,R004,2026-05-28,Renewal,Windham Coverage Partners,4000.0,Claims Module
+D00267,R015,2026-05-28,New Business,Northgate Insurance Solutions,168000.0,Policy Admin Core
+D00253,R014,2026-06-02,Renewal,Overlook Mutual Agency,11000.0,Claims Module
+D00120,R006,2026-06-02,Upsell,Brookhaven Risk Advisors,33000.0,Policy Admin Core
+D00094,R005,2026-06-02,New Business,Bridgeway Coverage Partners,-8500.0,Analytics Add-On
+D00156,R008,2026-06-03,Renewal,Redwood Underwriters,32000.0,Claims Module
+D00092,R005,2026-06-03,New Business,Coastal Underwriters,50500.0,Policy Admin Core
+D00036,R002,2026-06-04,New Business,Millbrook Agency Partners,66000.0,Policy Admin Core
+D00239,R013,2026-06-04,New Business,Ironwood Agency Partners,322000.0,Policy Admin Core
+D00063,R003,2026-06-04,Renewal,Millbrook Risk Advisors,27000.0,Analytics Add-On
+D00242,R013,2026-06-04,Renewal,Bridgeway Insurance Brokers,179000.0,Policy Admin Core
+D00096,R005,2026-06-05,New Business,Cedarline Underwriters,67000.0,Client Portal
+D00268,R015,2026-06-05,Renewal,Harborview Coverage Partners,71500.0,Policy Admin Core
+D00014,R001,2026-06-06,New Business,Pinnacle Insurance Solutions,20500.0,Claims Module
+D00098,R005,2026-06-06,Renewal,Hillcrest Insurance Solutions,28500.0,Claims Module
+D00172,R009,2026-06-07,New Business,Northgate Insurance Brokers,238500.0,Policy Admin Core
+D00271,R015,2026-06-07,Renewal,Beacon Insurance Solutions,112500.0,Policy Admin Core
+D00190,R010,2026-06-07,New Business,Anchor Insurance Solutions,73500.0,Policy Admin Core
+D00207,R011,2026-06-08,New Business,Ironwood Insurance Solutions,72000.0,Client Portal
+D00022,R001,2026-06-08,Renewal,Granite Insurance Brokers,5000.0,Policy Admin Core
+D00123,R006,2026-06-10,Renewal,Bridgeway Risk Advisors,1500.0,Policy Admin Core
+D00054,R003,2026-06-10,New Business,Bridgeway Insurance Brokers,45500.0,Analytics Add-On
+D00151,R008,2026-06-11,New Business,Fieldstone Insurance Group,32500.0,Policy Admin Core
+D00231,R012,2026-06-12,Renewal,Overlook Insurance Solutions,50000.0,Analytics Add-On
+D00100,R005,2026-06-12,Renewal,Brookhaven Coverage Partners,13000.0,Policy Admin Core
+D00126,R006,2026-06-13,Renewal,Redwood Insurance Brokers,25000.0,Client Portal
+D00138,R007,2026-06-14,New Business,Meadowbrook Insurance Brokers,132500.0,Policy Admin Core
+D00270,R015,2026-06-14,Renewal,Beacon Insurance Solutions,59000.0,Policy Admin Core
+D00269,R015,2026-06-16,Renewal,Stonebridge Insurance Brokers,5000.0,Policy Admin Core
+D00061,R003,2026-06-16,Renewal,Hillcrest Coverage Partners,18500.0,Policy Admin Core
+D00139,R007,2026-06-20,Renewal,Riverbend Underwriters,80500.0,Policy Admin Core
+D00228,R012,2026-06-21,Upsell,Bridgeway Risk Advisors,16500.0,Policy Admin Core
+D00209,R011,2026-06-22,New Business,Anchor Coverage Partners,76500.0,Policy Admin Core
+D00041,R002,2026-06-22,Renewal,Overlook Insurance Group,1500.0,Policy Admin Core
+D00075,R004,2026-06-23,New Business,Overlook Agency Partners,3000.0,Analytics Add-On
+D00157,R008,2026-06-24,Renewal,Summit Insurance Brokers,14000.0,Policy Admin Core
+D00256,R014,2026-06-25,Renewal,Brookhaven Insurance Brokers,12500.0,Policy Admin Core
+D00040,R002,2026-06-25,Renewal,Cedarline Agency Partners,5000.0,Policy Admin Core
+D00158,R008,2026-06-25,Renewal,Highmark Insurance Brokers,13000.0,Claims Module
+D00121,R006,2026-06-26,Upsell,Meadowbrook Agency Partners,29500.0,Policy Admin Core
+D00174,R009,2026-06-26,Renewal,Highmark Insurance Solutions,18500.0,Client Portal
+D00053,R003,2026-06-27,New Business,Vantage Insurance Solutions,43500.0,Policy Admin Core
+D00230,R012,2026-06-28,Renewal,Riverbend Mutual Agency,13500.0,Policy Admin Core
+D00115,R006,2026-06-28,New Business,Brookhaven Risk Advisors,65500.0,Client Portal
+D00254,R014,2026-04-02,Renewal,Granite Coverage Partners,147500.0,Policy Admin Core

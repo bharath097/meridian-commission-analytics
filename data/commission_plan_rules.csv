@@ -1,0 +1,6 @@
+tier,attainment_floor,attainment_ceiling,rate,applies_to,note
+1,0.0,1.0,0.08,New Business,Base rate up to 100% of quarterly quota
+2,1.0,1.25,0.1,New Business,Accelerator: 100%-125% of quota
+3,1.25,999.0,0.12,New Business,Accelerator: above 125% of quota
+0,0.0,999.0,0.06,Upsell,Flat rate on expansion ARR
+0,0.0,999.0,0.03,Renewal,Retention SPIF on renewed ARR
