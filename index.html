@@ -328,6 +328,11 @@
       <div class="pdesc">Budget set before the year began. Jul-Sep compares budget to the trend forecast, not actuals, since those months haven't happened yet.</div>
       <div id="chart-budget" style="height:320px;"></div>
     </div>
+    <div class="panel span2" style="margin-bottom:20px;">
+      <h3>Key Variance Drivers</h3>
+      <div class="pdesc">Computed live from the underlying deals — not generic commentary. Only shown for months with a variance of 10% or more.</div>
+      <div id="varianceDrivers"></div>
+    </div>
     <div class="panel span2">
       <h3>Monthly Detail</h3>
       <div style="max-height:340px;overflow-y:auto;">
@@ -910,6 +915,55 @@ function renderBudget() {
       <td style="color:${r.varB >= 0 ? 'var(--green)' : 'var(--rust)'}">${fmtPct(r.varB / r.budgetBookings)}</td>
       <td class="name">${r.basis}</td>
     </tr>`).join('');
+
+  renderVarianceDrivers(rows);
+}
+
+// ---------- Key Variance Drivers (computed live from actual deal-level data) ----------
+function renderVarianceDrivers(rows) {
+  const THRESHOLD = 0.10; // months with 10%+ variance get driver commentary
+  const actualMonths = ACTUAL_MONTHS; // Jan-Jun only — driver detail needs real deals, not forecast
+  const avgDealCount = sum(rows.filter(r => r.basis === 'Actual'), r =>
+    DEALS.filter(d => d.month === r.month).length) / actualMonths.length;
+
+  const driverCards = rows.filter(r => r.basis === 'Actual' && Math.abs(r.varB / r.budgetBookings) >= THRESHOLD)
+    .map(r => {
+      const monthDeals = DEALS.filter(d => d.month === r.month).sort((a, b) => b.arr_amount - a.arr_amount);
+      const top2 = monthDeals.slice(0, 2);
+      const top2Sum = sum(top2, d => d.arr_amount);
+      const concentration = r.actualBookings > 0 ? top2Sum / r.actualBookings : 0;
+      const pct = r.varB / r.budgetBookings;
+      const direction = pct >= 0 ? 'beat' : 'missed';
+      const monthLabel = new Date(r.month + '-01').toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+
+      let explanation;
+      if (concentration >= 0.30 && top2.length >= 2) {
+        const names = top2.map(d => `${d.rep_name} (${fmtUSD(d.arr_amount)})`).join(' and ');
+        explanation = `Driven largely by two large deals — ${names} — together ~${fmtPct(concentration)} of the month's total. ${pct >= 0 ? 'Concentration risk, not broad-based strength.' : ''}`;
+      } else {
+        const dealCount = monthDeals.length;
+        const monthAvgSize = dealCount > 0 ? r.actualBookings / dealCount : 0;
+        const h1TotalBookings = sum(DEALS.filter(d => ACTUAL_MONTHS.includes(d.month)), d => d.arr_amount);
+        const h1TotalCount = DEALS.filter(d => ACTUAL_MONTHS.includes(d.month)).length;
+        const h1AvgSize = h1TotalBookings / h1TotalCount;
+        const sizeDeviation = (monthAvgSize - h1AvgSize) / h1AvgSize;
+        const countDeviation = dealCount - avgDealCount;
+        const maxDeal = monthDeals.length ? monthDeals[0].arr_amount : 0;
+
+        if (sizeDeviation <= -0.20) {
+          explanation = `Driven by deal size, not deal count (${dealCount} deals, close to the H1 average of ${avgDealCount.toFixed(0)}) — average deal size was ${fmtUSD(monthAvgSize)}, ${fmtPct(Math.abs(sizeDeviation))} below the H1 average of ${fmtUSD(h1AvgSize)}, and the largest deal all month was only ${fmtUSD(maxDeal)}. No large deals closed, not fewer deals overall.`;
+        } else {
+          explanation = `Driven by deal volume — ${dealCount} deals vs. an H1 average of ${avgDealCount.toFixed(0)} (${countDeviation >= 0 ? '+' : ''}${countDeviation.toFixed(0)}), with average deal size close to normal. A pipeline/velocity pattern worth flagging to Sales leadership, not a one-off miss.`;
+        }
+      }
+
+      return `<div class="callout" style="margin-bottom:8px;">
+        <b>${monthLabel} (${pct >= 0 ? '+' : ''}${fmtPct(pct)}, ${direction} budget):</b> ${explanation}
+      </div>`;
+    }).join('');
+
+  document.getElementById('varianceDrivers').innerHTML = driverCards ||
+    '<div class="pdesc">No months this period varied from budget by 15% or more.</div>';
 }
 
 // ---------- Tabs & filters ----------
